@@ -1,0 +1,17 @@
+~~~~~Installation help for JAI jdk setup~~~~~
+1. Run the exe
+2. When the screen for next shows up, click next.
+3. Choose the directory for your JDK. EX: C:\Program Files\Java\jdk1.7.0_17
+4. Click next until the installation is over.
+5. JAI is now installed.
+
+To use inside of Eclipse:
+1. Right click your current project.
+2. Click properties all the way at the bottom.
+3. Click Java Build Path
+4. Click the Add External JARs button.
+5. Navigate to the JDK where you installed the JAI api.
+6. Once your in the JDK folder, go to > jre > lib > ext
+7. Choose both the jai_codec.jar and the jai_core.jar.
+	(If you have several JDKs and cannot find it, check them all)
+8. Eclipse should now be ready to use JAI within the specified project.
