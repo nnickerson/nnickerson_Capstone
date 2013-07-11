@@ -12,7 +12,7 @@ import com.sun.media.jai.widget.DisplayJAI;
 
 
 public class ImageLoader {
-	String fileLocation = "C:/mcShaders2 - Copy.png";
+//	String fileLocation = "C:/mcShaders2 - Copy.png";
 //	public Image loadImage(AppletContext context) {
 //		AppletContext appletContext = context;
 //		Image image = null;
@@ -26,7 +26,7 @@ public class ImageLoader {
 //		return image;
 //	}
 	
-	public DisplayJAI loadImageWithJAI() {
+	public DisplayJAI loadImageWithJAI(String fileLocation) {
 		ImageJAI ijai;
 		BufferedImage bi;
 		ParameterBlock pb = new ParameterBlock();
