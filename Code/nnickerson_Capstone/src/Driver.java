@@ -7,9 +7,11 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 
 import javax.media.jai.ImageJAI;
+import javax.media.jai.PlanarImage;
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
 import javax.swing.JFileChooser;
@@ -37,12 +39,18 @@ public class Driver extends JApplet {
 	DisplayJAI displayJAIimage;
 	ImageLoader il = new ImageLoader();
 	Container imageHolder = this.getContentPane();
+	PlanarImage loadedImage;
+	JMenuBar mainMenuBar;
+	JMenu mainMenu;
+	JMenuItem loadImageOption;
+	JLabel welcomeJLabel;
 
 	public void init() {
 		addImageLoadMenu();
-	    this.add(new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet."));
+		addManipulativeTestMenu();
+		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
+	    this.add(welcomeJLabel);
 	    loadImageTest();
-	    
 	}
 	
 	public void loadImageTest() {
@@ -60,9 +68,9 @@ public class Driver extends JApplet {
 	}
 	
 	public void addImageLoadMenu() {
-		JMenuBar mainMenuBar = new JMenuBar();
-	    JMenu mainMenu = new JMenu("File");
-	    JMenuItem loadImageOption = new JMenuItem("Load Image");
+		mainMenuBar = new JMenuBar();
+	    mainMenu = new JMenu("File");
+	    loadImageOption = new JMenuItem("Load Image");
 	    mainMenu.add(loadImageOption);
 	    mainMenuBar.add(mainMenu);
 	    this.setJMenuBar(mainMenuBar);
@@ -76,13 +84,49 @@ public class Driver extends JApplet {
 				fileChooser.showOpenDialog(null);
 				String imageLocation = fileChooser.getSelectedFile().getAbsolutePath();
 				System.out.println(imageLocation);
-				displayJAIimage = il.loadImageWithJAI(imageLocation);
-				
+				loadedImage = il.loadImageWithJAI(imageLocation);
+				displayJAIimage = new DisplayJAI(loadedImage);
 				imageHolder.add(new JScrollPane(displayJAIimage));
+				welcomeJLabel.setVisible(false);
 			}
 		});
 	    //End of listeners//
 	    
+	    this.getContentPane().repaint();
+	    imageHolder.repaint();
+	    this.repaint();
+	}
+	
+	public void manipulativeTest() {
+		Raster raster = loadedImage.getData();
+		int Width = loadedImage.getMaxX();
+		int Height = loadedImage.getMaxY();
+		System.out.println("Width: " + Width + "   Height: " + Height);
+//		int[] pixels = raster.getPixels(50, 50, 200, 200, new int[Width*Height]);
+//		for(int p : pixels) {
+//			System.out.println(", " + p);
+//		}
+		System.out.println(raster.getPixel(200, 200, new double[40000])[156]);
+		
+	}
+	
+	public void addManipulativeTestMenu() {
+		JMenuItem manipulativeTestOption = new JMenuItem("Manipulate Image");
+	    mainMenu.add(manipulativeTestOption);
+	    mainMenuBar.add(mainMenu);
+	    this.setJMenuBar(mainMenuBar);
+	    
+	    //Listeners//
+	    manipulativeTestOption.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				manipulativeTest();
+			}
+		});
+	    //End of listeners//
+	    
+	    this.getContentPane().repaint();
 	    this.repaint();
 	}
 	

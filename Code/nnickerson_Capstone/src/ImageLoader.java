@@ -26,15 +26,10 @@ public class ImageLoader {
 //		return image;
 //	}
 	
-	public DisplayJAI loadImageWithJAI(String fileLocation) {
-		ImageJAI ijai;
-		BufferedImage bi;
+	public PlanarImage loadImageWithJAI(String fileLocation) {
 		ParameterBlock pb = new ParameterBlock();
 		pb.add(fileLocation);
 		PlanarImage loadedImage = JAI.create("fileLoad", pb);
-		bi = loadedImage.getAsBufferedImage();
-		DisplayJAI jai = new DisplayJAI(loadedImage);
-		
-		return jai;
+		return loadedImage;
 	}
 }
