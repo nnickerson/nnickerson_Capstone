@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 
 import javax.media.jai.ImageJAI;
 import javax.media.jai.PlanarImage;
@@ -99,14 +100,52 @@ public class Driver extends JApplet {
 	
 	public void manipulativeTest() {
 		Raster raster = loadedImage.getData();
-		int Width = loadedImage.getMaxX();
-		int Height = loadedImage.getMaxY();
-		System.out.println("Width: " + Width + "   Height: " + Height);
-//		int[] pixels = raster.getPixels(50, 50, 200, 200, new int[Width*Height]);
-//		for(int p : pixels) {
-//			System.out.println(", " + p);
-//		}
+		int width = loadedImage.getMaxX();
+		int height = loadedImage.getMaxY();
+		int numOfBands = loadedImage.getNumBands();
+		System.out.println("Width: " + width + "   Height: " + height);
+		int[] pixels = raster.getPixels(0, 0, width, height, new int[numOfBands*width*height]);
+		int vCount = 1;
+		for(int p : pixels) {
+			if(vCount >=3) {
+				System.out.print(", " + p);
+				System.out.println("\n");
+				vCount = 1;
+			}
+			else {
+				System.out.print(", " + p);
+				vCount++;
+			}
+			try {
+				Thread.sleep(2);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 		System.out.println(raster.getPixel(200, 200, new double[40000])[156]);
+		
+//		SampleModel sm = loadedImage.getSampleModel();
+//		int nbands = sm.getNumBands();
+//		int[] pixels = new int[nbands*width*height];
+//		raster.getPixels(0,0,width,height,pixels);
+//		int offset;
+//		for(int h=0;h<height;h++) {
+//			for(int w=0;w<width;w++) {
+//				offset = h*width*nbands+w*nbands;
+//				System.out.print("at ("+w+","+h+"): ");
+//				for(int band=0;band<nbands;band++) {
+//					System.out.print(pixels[offset+band]+" ");
+//					System.out.println();
+//					try {
+//						Thread.sleep(10);
+//					} catch (InterruptedException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//		}
 		
 	}
 	
