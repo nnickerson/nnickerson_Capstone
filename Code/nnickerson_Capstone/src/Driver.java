@@ -15,7 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.ImageJAI;
+import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
+import javax.media.jai.TiledImage;
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
 import javax.swing.JFileChooser;
@@ -130,10 +133,38 @@ public class Driver extends JApplet {
 			}
 		}
 		System.out.println(raster.getPixel(200, 200, new double[40000])[156]);
-		System.out.println("DONE");
 		
-		WritableRaster wr = raster.createCompatibleWritableRaster();
+		WritableRaster wr = loadedImage.copyData();
 		wr.setPixel(200, 200, raster.getPixels(0, 0, width, height, new double[numOfBands*width*height]));
+		myPixels.get((width/3)*(height/3)).setR(0+200);
+		myPixels.get((width/3)*(height/3)).setG(239-170);
+		myPixels.get((width/3)*(height/3)).setB(255);
+		wr.setPixels(0, 0, width, height, pixelToDoubleArray(myPixels, numOfBands));
+		
+		imageHolder.removeAll();
+		TiledImage editedImage = new TiledImage(loadedImage, 1, 1);
+		editedImage.setData(wr);
+		loadedImage = editedImage.createSnapshot();
+		displayJAIimage = new DisplayJAI(loadedImage);
+		imageHolder.add(new JScrollPane(displayJAIimage));
+		
+		 this.getContentPane().repaint();
+		 imageHolder.repaint();
+		 this.repaint();
+	}
+	
+	public double[] pixelToDoubleArray(List<Pixel> pixels, int numOfBands) {
+		double[] doublePixels = new double[numOfBands*pixels.size()];
+		int index = 0;
+		for(Pixel p : pixels) {
+			doublePixels[index] = (Double.parseDouble("" + p.r));
+			index++;
+			doublePixels[index] = (Double.parseDouble("" + p.g));
+			index++;
+			doublePixels[index] = (Double.parseDouble("" + p.b));
+			index++;
+		}
+		return doublePixels;
 	}
 	
 	public void addManipulativeTestMenu() {
