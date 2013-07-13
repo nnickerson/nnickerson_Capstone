@@ -10,6 +10,9 @@ import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.media.jai.ImageJAI;
 import javax.media.jai.PlanarImage;
@@ -106,47 +109,31 @@ public class Driver extends JApplet {
 		System.out.println("Width: " + width + "   Height: " + height);
 		int[] pixels = raster.getPixels(0, 0, width, height, new int[numOfBands*width*height]);
 		int vCount = 1;
+		int r = 0, g = 0, b = 0;
+		List<Pixel> myPixels = new ArrayList<Pixel>();
 		for(int p : pixels) {
 			if(vCount >=3) {
-				System.out.print(", " + p);
-				System.out.println("\n");
+//				System.out.print(", " + p);
+//				System.out.println("\n");
+				myPixels.add(new Pixel(r,g,b));
 				vCount = 1;
 			}
 			else {
-				System.out.print(", " + p);
+//				System.out.print(", " + p);
+				if(vCount == 1) {
+					r = p;
+				}
+				else if(vCount == 2) {
+					g = p;
+				}
 				vCount++;
-			}
-			try {
-				Thread.sleep(2);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 		System.out.println(raster.getPixel(200, 200, new double[40000])[156]);
+		System.out.println("DONE");
 		
-//		SampleModel sm = loadedImage.getSampleModel();
-//		int nbands = sm.getNumBands();
-//		int[] pixels = new int[nbands*width*height];
-//		raster.getPixels(0,0,width,height,pixels);
-//		int offset;
-//		for(int h=0;h<height;h++) {
-//			for(int w=0;w<width;w++) {
-//				offset = h*width*nbands+w*nbands;
-//				System.out.print("at ("+w+","+h+"): ");
-//				for(int band=0;band<nbands;band++) {
-//					System.out.print(pixels[offset+band]+" ");
-//					System.out.println();
-//					try {
-//						Thread.sleep(10);
-//					} catch (InterruptedException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//				}
-//			}
-//		}
-		
+		WritableRaster wr = raster.createCompatibleWritableRaster();
+		wr.setPixel(200, 200, raster.getPixels(0, 0, width, height, new double[numOfBands*width*height]));
 	}
 	
 	public void addManipulativeTestMenu() {
