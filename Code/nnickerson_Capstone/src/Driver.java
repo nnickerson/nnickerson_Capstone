@@ -1,34 +1,18 @@
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Container;
-import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
-import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.media.jai.ImageJAI;
-import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
-import javax.media.jai.RenderedOp;
 import javax.media.jai.TiledImage;
-import javax.swing.BorderFactory;
 import javax.swing.JApplet;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 
 import com.sun.media.jai.widget.DisplayJAI;
@@ -104,47 +88,11 @@ public class Driver extends JApplet {
 	    this.repaint();
 	}
 	
-	public void manipulativeTest() {
-		Raster raster = loadedImage.getData();
-		int width = loadedImage.getMaxX();
-		int height = loadedImage.getMaxY();
-		int numOfBands = loadedImage.getNumBands();
-		System.out.println("Width: " + width + "   Height: " + height);
-		int[] pixels = raster.getPixels(0, 0, width, height, new int[numOfBands*width*height]);
-		int vCount = 1;
-		int r = 0, g = 0, b = 0;
-		List<Pixel> myPixels = new ArrayList<Pixel>();
-		for(int p : pixels) {
-			if(vCount >=3) {
-//				System.out.print(", " + p);
-//				System.out.println("\n");
-				myPixels.add(new Pixel(r,g,b));
-				vCount = 1;
-			}
-			else {
-//				System.out.print(", " + p);
-				if(vCount == 1) {
-					r = p;
-				}
-				else if(vCount == 2) {
-					g = p;
-				}
-				vCount++;
-			}
-		}
-		System.out.println(raster.getPixel(200, 200, new double[40000])[156]);
-		
-		WritableRaster wr = loadedImage.copyData();
-		wr.setPixel(200, 200, raster.getPixels(0, 0, width, height, new double[numOfBands*width*height]));
-		myPixels.get((width/3)*(height/3)).setR(0+200);
-		myPixels.get((width/3)*(height/3)).setG(239-170);
-		myPixels.get((width/3)*(height/3)).setB(255);
-		wr.setPixels(0, 0, width, height, pixelToDoubleArray(myPixels, numOfBands));
-		
+	public void manipulativeTest() {		
 		imageHolder.removeAll();
-		TiledImage editedImage = new TiledImage(loadedImage, 1, 1);
-		editedImage.setData(wr);
-		loadedImage = editedImage.createSnapshot();
+		
+		TiledImage myTiledImage = alterPixelsData();
+		loadedImage = myTiledImage.createSnapshot();
 		displayJAIimage = new DisplayJAI(loadedImage);
 		imageHolder.add(new JScrollPane(displayJAIimage));
 		
@@ -153,18 +101,36 @@ public class Driver extends JApplet {
 		 this.repaint();
 	}
 	
-	public double[] pixelToDoubleArray(List<Pixel> pixels, int numOfBands) {
-		double[] doublePixels = new double[numOfBands*pixels.size()];
-		int index = 0;
-		for(Pixel p : pixels) {
-			doublePixels[index] = (Double.parseDouble("" + p.r));
-			index++;
-			doublePixels[index] = (Double.parseDouble("" + p.g));
-			index++;
-			doublePixels[index] = (Double.parseDouble("" + p.b));
-			index++;
+	public TiledImage alterPixelsData() {
+		int width = loadedImage.getWidth();
+		int height = loadedImage.getHeight();
+		SampleModel mySampleModel = loadedImage.getSampleModel();
+		int nbands = mySampleModel.getNumBands();
+		Raster readableRaster = loadedImage.getData();
+		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
+		int[] pixels = new int[nbands*width*height];
+		readableRaster.getPixels(0, 0, width, height, pixels);
+		int pixelIndex = 0;
+		for(int h=0;h<height;h++) {
+			for(int w=0;w<width;w++)
+			{
+				pixelIndex = h*width*nbands+w*nbands;
+				for(int band=0;band<nbands;band++) {
+					if(h == height/2 && w == height/2) {
+						if(band == 0) {
+							pixels[pixelIndex+band] = 255;
+						}
+						else {
+							pixels[pixelIndex+band] = 0;
+						}
+					}
+				}
+			}
 		}
-		return doublePixels;
+		writableRaster.setPixels(0, 0, width, height, pixels);
+		TiledImage ti = new TiledImage(loadedImage,1,1);
+		ti.setData(writableRaster);
+		return ti;
 	}
 	
 	public void addManipulativeTestMenu() {
