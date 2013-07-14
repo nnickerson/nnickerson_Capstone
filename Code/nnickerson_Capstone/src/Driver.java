@@ -41,21 +41,13 @@ public class Driver extends JApplet {
 		addManipulativeTestMenu();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
-	    loadImageTest();
 	}
 	
-	public void loadImageTest() {
-		//Regular image loading//
-//		image = il.loadImage(this.getAppletContext());
-		//End of regular image loading//
-		
-		//Loading image with JAI//
-//		ImageJAI image = 
-//		RenderedImage renderedJAI;
-//		displayJAIimage = il.loadImageWithJAI();
-//		Container imageHolder = this.getContentPane();
-//		imageHolder.add(new JScrollPane(displayJAIimage));
-		//End of loading image with JAI//
+	public void loadImage(String imageLocation) {
+		loadedImage = il.loadImageWithJAI(imageLocation);
+		displayJAIimage = new DisplayJAI(loadedImage);
+		imageHolder.add(new JScrollPane(displayJAIimage));
+		welcomeJLabel.setVisible(false);
 	}
 	
 	public void addImageLoadMenu() {
@@ -75,10 +67,7 @@ public class Driver extends JApplet {
 				fileChooser.showOpenDialog(null);
 				String imageLocation = fileChooser.getSelectedFile().getAbsolutePath();
 				System.out.println(imageLocation);
-				loadedImage = il.loadImageWithJAI(imageLocation);
-				displayJAIimage = new DisplayJAI(loadedImage);
-				imageHolder.add(new JScrollPane(displayJAIimage));
-				welcomeJLabel.setVisible(false);
+				loadImage(imageLocation);
 			}
 		});
 	    //End of listeners//
@@ -101,6 +90,18 @@ public class Driver extends JApplet {
 		 this.repaint();
 	}
 	
+	public void findRedEyeValues() {
+		int redMin = 175;
+		int redMax = 255;
+		int greenMin = 0;
+		int greenMax = 75;
+		int blueMin = 0;
+		int blueMax = 75;
+		
+	}
+	
+	
+	
 	public TiledImage alterPixelsData() {
 		int width = loadedImage.getWidth();
 		int height = loadedImage.getHeight();
@@ -118,10 +119,14 @@ public class Driver extends JApplet {
 				for(int band=0;band<nbands;band++) {
 					if(h == height/2 && w == height/2) {
 						if(band == 0) {
+							System.out.println("Value: " + pixels[pixelIndex+band]);
 							pixels[pixelIndex+band] = 255;
+							pixels[(pixelIndex-1)+band] = 255;
 						}
 						else {
+							System.out.println("Value: " + pixels[pixelIndex+band]);
 							pixels[pixelIndex+band] = 0;
+							pixels[(pixelIndex-1)+band] = 0;
 						}
 					}
 				}
