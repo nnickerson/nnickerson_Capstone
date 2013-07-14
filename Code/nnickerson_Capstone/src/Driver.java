@@ -90,14 +90,30 @@ public class Driver extends JApplet {
 		 this.repaint();
 	}
 	
-	public void findRedEyeValues() {
-		int redMin = 175;
+	public boolean isRedEyeValues(int r, int g, int b) {
+		boolean isRedEyeValue = false;
+		float pixelRedRatio = ((float)r/(((float)g+(float)b)/(float)2));
+		int redMin = 88;
 		int redMax = 255;
-		int greenMin = 0;
-		int greenMax = 75;
-		int blueMin = 0;
-		int blueMax = 75;
+		int greenMin = 33;
+		int greenMax = 255;
+		int blueMin = 33;
+		int blueMax = 251;
 		
+		float redMinRatio = ((float)redMin/(((float)greenMin+(float)blueMin)/(float)2));
+		float redMaxRatio = ((float)redMax/(((float)greenMax+(float)blueMax)/(float)2));
+		
+		if(pixelRedRatio >= redMaxRatio && pixelRedRatio >= redMinRatio) {
+			if(r > redMin && g > greenMin && b > blueMin) {
+				if(b < blueMax) {
+					if((float)g-(float)b < 50) {
+						isRedEyeValue = true;
+					}
+				}
+			}
+		}
+		
+		return isRedEyeValue;
 	}
 	
 	
@@ -112,23 +128,37 @@ public class Driver extends JApplet {
 		int[] pixels = new int[nbands*width*height];
 		readableRaster.getPixels(0, 0, width, height, pixels);
 		int pixelIndex = 0;
+		int r = 0, g = 0, b = 0;
 		for(int h=0;h<height;h++) {
 			for(int w=0;w<width;w++)
 			{
 				pixelIndex = h*width*nbands+w*nbands;
 				for(int band=0;band<nbands;band++) {
-					if(h == height/2 && w == height/2) {
+//					if(h == height/2 && w == height/2) { //Changing pixel near the center of the image.
 						if(band == 0) {
-							System.out.println("Value: " + pixels[pixelIndex+band]);
-							pixels[pixelIndex+band] = 255;
-							pixels[(pixelIndex-1)+band] = 255;
+//							System.out.println("Value: " + pixels[pixelIndex+band]);
+//							pixels[pixelIndex+band] = 255;
+//							pixels[(pixelIndex-1)+band] = 255;
+							r = pixels[pixelIndex+band];
+						}
+						else if(band == 1) {
+//							System.out.println("Value: " + pixels[pixelIndex+band]);
+//							pixels[pixelIndex+band] = 0;
+//							pixels[(pixelIndex-1)+band] = 0;
+							g = pixels[pixelIndex+band];
 						}
 						else {
-							System.out.println("Value: " + pixels[pixelIndex+band]);
-							pixels[pixelIndex+band] = 0;
-							pixels[(pixelIndex-1)+band] = 0;
+//							System.out.println("Value: " + pixels[pixelIndex+band]);
+//							pixels[pixelIndex+band] = 0;
+//							pixels[(pixelIndex-1)+band] = 0;
+							b = pixels[pixelIndex+band];
+							if(isRedEyeValues(r, g, b)) {
+								pixels[pixelIndex+(band)] = 0;
+								pixels[pixelIndex+(band-1)] = 0;
+								pixels[pixelIndex+(band-2)] = 0;
+							}
 						}
-					}
+//					}
 				}
 			}
 		}
