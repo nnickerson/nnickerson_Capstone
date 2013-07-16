@@ -120,10 +120,51 @@ public class Driver extends JApplet {
 		return isRedEyeValue;
 	}
 	
-	public int[] createAnnotations(int width, int nbands, int[] pixels) {
+	public int[] createBoundingBoxes(int width, int height, int nbands, int[] pixels) {
+		List<List<Pixel>> boxedPixels = new ArrayList<List<Pixel>>();
+		int[] newPixels = pixels;
+		for(Pixel p : redPixels) {
+			List<Pixel> pixList = new ArrayList<Pixel>();
+			if(!p.isInBoundingBox && !p.alreadyCheckedForStart) {
+				p.alreadyCheckedForStart = true;
+				p.isInBoundingBox = true;
+				for(Pixel pi : redPixels) {
+					if((pi.x-p.x > -5 && pi.x-p.x < 5) || (pi.y-p.y > -5 && pi.y-p.y < 5) && !pi.isInBoundingBox) {
+						pixList.add(pi);
+						pi.isInBoundingBox = true;
+					}
+				}
+				boxedPixels.add(pixList);
+			}
+		}
+		
+		
+		for(List<Pixel> lp : boxedPixels) {
+			System.out.println(lp.toString());
+			int minX = width;
+			int maxX = 0;
+			int minY = height;
+			int maxY = 0;
+			for(Pixel pl : lp) {
+				if(pl.x < minX) {
+					minX = pl.x;
+				}
+				if(pl.x > maxX) {
+					maxX = pl.x;
+				}
+				if(pl.y < minY) {
+					minY = pl.y;
+				}
+				if(pl.y > maxY) {
+					maxY = pl.y;
+				}
+			}
+			SquareAnnotation sa = new SquareAnnotation(minX, minY, maxX, maxY, false);
+			sa.createBoundingBox(width, nbands, newPixels);
+		}
+		
 		//Need to find the area where the pixels occur
-		SquareAnnotation sa = new SquareAnnotation(200, 200, 400, 400, false);
-		return sa.createBoundingBox(width, nbands, pixels);
+		return newPixels;
 	}
 	
 	public TiledImage alterPixelsData() {
@@ -171,7 +212,7 @@ public class Driver extends JApplet {
 				}
 			}
 		}
-		pixels = createAnnotations(width, nbands, pixels);
+		pixels = createBoundingBoxes(width, height, nbands, pixels);
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(loadedImage,1,1);
 		ti.setData(writableRaster);

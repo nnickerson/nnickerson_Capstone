@@ -37,6 +37,8 @@ public class Pixel {
 	int b = 0;
 	int x = 0;
 	int y = 0;
+	boolean isInBoundingBox = false;
+	boolean alreadyCheckedForStart = false;
 
 	/**
 	 * 
