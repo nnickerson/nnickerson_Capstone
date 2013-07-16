@@ -116,7 +116,11 @@ public class Driver extends JApplet {
 		return isRedEyeValue;
 	}
 	
-	
+	public int[] createAnnotations(int width, int nbands, int[] pixels) {
+		//Need to find the area where the pixels occur
+		SquareAnnotation sa = new SquareAnnotation(200, 200, 400, 400, false);
+		return sa.createBoundingBox(width, nbands, pixels);
+	}
 	
 	public TiledImage alterPixelsData() {
 		int width = loadedImage.getWidth();
@@ -162,6 +166,7 @@ public class Driver extends JApplet {
 				}
 			}
 		}
+		pixels = createAnnotations(width, nbands, pixels);
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(loadedImage,1,1);
 		ti.setData(writableRaster);
