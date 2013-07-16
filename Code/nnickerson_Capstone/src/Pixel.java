@@ -35,14 +35,18 @@ public class Pixel {
 
 	int g = 0;
 	int b = 0;
+	int x = 0;
+	int y = 0;
 
 	/**
 	 * 
 	 */
-	public Pixel(int r, int g, int b) {
-		this.r = r;
-		this.g = g;
-		this.b = b;
+	public Pixel(int x, int y) {
+//		this.r = r;
+//		this.g = g;
+//		this.b = b;
+		this.x = x;
+		this.y = y;
 	}
 	
 	

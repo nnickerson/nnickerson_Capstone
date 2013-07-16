@@ -5,6 +5,9 @@ import java.awt.event.ActionListener;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
 import javax.swing.JApplet;
@@ -35,6 +38,7 @@ public class Driver extends JApplet {
 	JMenu mainMenu;
 	JMenuItem loadImageOption;
 	JLabel welcomeJLabel;
+	List<Pixel> redPixels = new ArrayList<Pixel>();
 
 	public void init() {
 		addImageLoadMenu();
@@ -133,10 +137,10 @@ public class Driver extends JApplet {
 		readableRaster.getPixels(0, 0, width, height, pixels);
 		int pixelIndex = 0;
 		int r = 0, g = 0, b = 0;
-		for(int h=0;h<height;h++) {
-			for(int w=0;w<width;w++)
+		for(int y=0;y<height;y++) {
+			for(int x=0;x<width;x++)
 			{
-				pixelIndex = h*width*nbands+w*nbands;
+				pixelIndex = y*width*nbands+x*nbands;
 				for(int band=0;band<nbands;band++) {
 //					if(h == height/2 && w == height/2) { //Changing pixel near the center of the image.
 						if(band == 0) {
@@ -157,6 +161,7 @@ public class Driver extends JApplet {
 //							pixels[(pixelIndex-1)+band] = 0;
 							b = pixels[pixelIndex+band];
 							if(isRedEyeValues(r, g, b)) {
+								redPixels.add(new Pixel(x, y));
 								pixels[pixelIndex+(band)] = 0;
 								pixels[pixelIndex+(band-1)] = 0;
 								pixels[pixelIndex+(band-2)] = 0;
