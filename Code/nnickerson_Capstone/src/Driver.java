@@ -39,8 +39,10 @@ public class Driver extends JApplet {
 	JMenuItem loadImageOption;
 	JLabel welcomeJLabel;
 	List<Pixel> redPixels = new ArrayList<Pixel>();
+	
 
 	public void init() {
+		setSize(500, 500);
 		addImageLoadMenu();
 		addManipulativeTestMenu();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
@@ -88,10 +90,14 @@ public class Driver extends JApplet {
 		loadedImage = myTiledImage.createSnapshot();
 		displayJAIimage = new DisplayJAI(loadedImage);
 		imageHolder.add(new JScrollPane(displayJAIimage));
+		welcomeJLabel.setText("");
+		welcomeJLabel.setVisible(true);
+		welcomeJLabel.setVisible(false);
 		
-		 this.getContentPane().repaint();
-		 imageHolder.repaint();
-		 this.repaint();
+		this.getContentPane().repaint();
+		imageHolder.repaint();
+		this.repaint();
+		repaint();
 	}
 	
 	public boolean isRedEyeValues(int r, int g, int b) {
@@ -231,6 +237,7 @@ public class Driver extends JApplet {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				manipulativeTest();
+				repaint();
 			}
 		});
 	    //End of listeners//
