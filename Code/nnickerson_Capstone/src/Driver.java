@@ -1,5 +1,6 @@
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -164,6 +165,57 @@ public class Driver extends JApplet {
 		return isRedEyeValue;
 	}
 	
+//	public int[] findEye(int x, int y, int amountOfPixels, int[] pixels, int width, int height, int bands) {
+//		int[] ps = pixels;
+//		int xPlus = x;
+//		int yPlus = y;
+//		int xNeg = 0;
+//		int yNeg = 0;
+//		int pixelIndexPlus = 0;
+//		int pixelIndexNeg = 0;
+//		
+//		for(int i = 0; i < amountOfPixels; i++) {
+//			if(i < amountOfPixels) {
+//				xPlus += i;
+//				yPlus += amountOfPixels-i;
+//				if(xPlus > width) { xPlus = width; }
+//				if(yPlus > height) { yPlus = height; }
+//				xNeg = xPlus*(-1);
+//				yNeg = yPlus*(-1);
+//				if(xNeg < width) { xNeg = 0; }
+//				if(yNeg < height) { yNeg = 0; }
+//				pixelIndexPlus = yPlus*width*bands+xPlus*bands;
+//				pixelIndexNeg = (yPlus+yNeg)*width*bands+(xPlus+xNeg)*bands;
+//				pixels[pixelIndexPlus+(0)] = 255;
+//				pixels[pixelIndexPlus+(1)] = 255;
+//				pixels[pixelIndexPlus+(2)] = 255;
+//				pixels[pixelIndexNeg+(0)] = 255;
+//				pixels[pixelIndexNeg+(1)] = 255;
+//				pixels[pixelIndexNeg+(2)] = 255;
+//			}
+//			else {
+//				xPlus += amountOfPixels-i;
+//				yPlus += i;
+//				if(xPlus > width) { xPlus = width; }
+//				if(yPlus > height) { yPlus = height; }
+//				xNeg = xPlus*(-1);
+//				yNeg = yPlus*(-1);
+//				if(xNeg < width) { xNeg = 0; }
+//				if(yNeg < height) { yNeg = 0; }
+//				pixelIndexPlus = yPlus*width*bands+xPlus*bands;
+//				pixelIndexNeg = (yPlus+yNeg)*width*bands+(xPlus+xNeg)*bands;
+//				pixels[pixelIndexPlus+(0)] = 255;
+//				pixels[pixelIndexPlus+(1)] = 255;
+//				pixels[pixelIndexPlus+(2)] = 255;
+//				pixels[pixelIndexNeg+(0)] = 255;
+//				pixels[pixelIndexNeg+(1)] = 255;
+//				pixels[pixelIndexNeg+(2)] = 255;
+//			}
+//		}
+//		
+//		return ps;
+//	}
+	
 	public int[] createBoundingBoxes(int width, int height, int nbands, int[] pixels) {
 		List<List<Pixel>> boxedPixels = new ArrayList<List<Pixel>>();
 		int[] newPixels = pixels;
@@ -173,13 +225,14 @@ public class Driver extends JApplet {
 				p.alreadyCheckedForStart = true;
 				p.isInBoundingBox = true;
 				for(Pixel pi : redPixels) {
-					if(((pi.x-p.x > -3 && pi.x-p.x < 3) && (pi.y-p.y > -3 && pi.y-p.y < 3)) && !pi.isInBoundingBox) {
+					if(((pi.x-p.x > -5 && pi.x-p.x < 5) && (pi.y-p.y > -5 && pi.y-p.y < 5)) && !pi.isInBoundingBox) {
 						pi.isInBoundingBox = true;
 						pixList.add(pi);
 					}
 				}
 				if(pixList.size() >= 1) {
 					boxedPixels.add(pixList);
+//					newPixels = findEye(pixList.get(pixList.size()/2).x, pixList.get(pixList.size()/2).y, pixList.size()*2, newPixels, width, height, nbands);
 				}
 			}
 		}
@@ -292,8 +345,8 @@ public class Driver extends JApplet {
 	    this.repaint();
 	}
 	
-//	public void paint(Graphics g)
-//	   {
-//	      g.drawImage(image, 0, 0, 1360, 768, null);
-//	   } 
+//	public void paint(Graphics g) {
+//		// g.drawImage(image, 0, 0, 1360, 768, null);
+////		g.drawOval(x, y, width, height)
+//	}
 }
