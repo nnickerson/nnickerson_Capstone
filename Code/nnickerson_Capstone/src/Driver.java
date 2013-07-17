@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -100,6 +101,12 @@ public class Driver extends JApplet {
 		repaint();
 	}
 	
+	public float[] getHSB(int r, int b, int g) {
+		float[] hsb = new float[3];
+		hsb = Color.RGBtoHSB(r, g, b, hsb);
+		return hsb;
+	}
+	
 	public boolean isRedEyeValues(int r, int g, int b) {
 		boolean isRedEyeValue = false;
 		float pixelRedRatio = ((float)r/(((float)g+(float)b)/(float)2));
@@ -113,11 +120,42 @@ public class Driver extends JApplet {
 		float redMinRatio = ((float)redMin/(((float)greenMin+(float)blueMin)/(float)2));
 		float redMaxRatio = ((float)redMax/(((float)greenMax+(float)blueMax)/(float)2));
 		
-		if(pixelRedRatio >= redMaxRatio && pixelRedRatio >= redMinRatio) {
-			if(r > redMin && g > greenMin && b > blueMin) {
-				if(b < blueMax) {
-					if((float)g-(float)b < 50) {
-						isRedEyeValue = true;
+		
+		float[] hsb = getHSB(r, g, b);
+		float hue = hsb[0];
+		float saturation = hsb[1];
+		float brightness = hsb[2];
+//		if(hue >= .95 && hue <= .95) {
+//			if(saturation > .43) {
+//				if(brightness > .2) {
+//					isRedEyeValue = true;
+//				}
+//			}
+//		}
+		
+//		if(pixelRedRatio >= redMinRatio) {
+//			if(r > redMin && g > greenMin && b > blueMin) {
+//				if(b < blueMax) {
+//					if((float)g-(float)b < 50) {
+//						isRedEyeValue = true;
+//					}
+//				}
+//			}
+//		}
+		
+		
+		int averageGrayscale = (r+g+b)/3;
+		if(hue >= .95 && hue <= 1.05) {
+			if(saturation > .43) {
+				if(brightness > .1 && brightness < .9) {
+					if(averageGrayscale < 205 && averageGrayscale > 50) {
+						if(g-b < 75) {
+							if(g < r && b < r) {
+								if(pixelRedRatio >= 2.25) {
+									isRedEyeValue = true;
+								}
+							}
+						}
 					}
 				}
 			}
@@ -135,12 +173,14 @@ public class Driver extends JApplet {
 				p.alreadyCheckedForStart = true;
 				p.isInBoundingBox = true;
 				for(Pixel pi : redPixels) {
-					if((pi.x-p.x > -5 && pi.x-p.x < 5) || (pi.y-p.y > -5 && pi.y-p.y < 5) && !pi.isInBoundingBox) {
-						pixList.add(pi);
+					if(((pi.x-p.x > -3 && pi.x-p.x < 3) && (pi.y-p.y > -3 && pi.y-p.y < 3)) && !pi.isInBoundingBox) {
 						pi.isInBoundingBox = true;
+						pixList.add(pi);
 					}
 				}
-				boxedPixels.add(pixList);
+				if(pixList.size() >= 1) {
+					boxedPixels.add(pixList);
+				}
 			}
 		}
 		
@@ -165,7 +205,13 @@ public class Driver extends JApplet {
 					maxY = pl.y;
 				}
 			}
-			SquareAnnotation sa = new SquareAnnotation(minX, minY, maxX, maxY, false);
+			SquareAnnotation sa;
+			if(!(minX-1 < 1) && !(minY-1<1) && !(maxX+1>width) && !(maxY+1>height)) {
+				sa = new SquareAnnotation(minX, minY, maxX, maxY, false);
+			}
+			else {
+				sa = new SquareAnnotation(minX-1, minY-1, maxX+1, maxY+1, false);
+			}
 			sa.createBoundingBox(width, nbands, newPixels);
 		}
 		

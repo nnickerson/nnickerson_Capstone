@@ -31,6 +31,7 @@ public class SquareAnnotation {
 		int x1 = topLeftX;
 		while(x1 < bottomRightX) {
 			int pixelIndex = bottomRightY*width*nbands+x1*nbands;
+			System.out.println("PixelIndex: " + pixelIndex + "     pixelsLength: " + pixels.length + "     bottomRightY: " + bottomRightY + "\nwidth: " + width + "     nbands: " + nbands + "     x1: " + x1);
 			pixels[pixelIndex+0] = 50;
 			pixels[pixelIndex+1] = 200;
 			pixels[pixelIndex+2] = 25;
