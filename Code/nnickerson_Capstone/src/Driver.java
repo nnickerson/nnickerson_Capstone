@@ -1,15 +1,23 @@
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
 import javax.swing.JApplet;
@@ -18,7 +26,9 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 
 import com.sun.media.jai.widget.DisplayJAI;
 
@@ -41,10 +51,21 @@ public class Driver extends JApplet {
 	JMenuItem loadImageOption;
 	JLabel welcomeJLabel;
 	List<Pixel> redPixels = new ArrayList<Pixel>();
-	
+	JScrollPane scrollPane = new JScrollPane();
+	int rWidth = 500;
+	int rHeight = 500;
 
 	public void init() {
-		setSize(500, 500);
+		setupApplet();
+	}
+	
+	public void setupApplet() {
+		Dimension resolution = Toolkit.getDefaultToolkit().getScreenSize();
+		double resWidth = resolution.getWidth();
+		double resHeight = resolution.getHeight();
+		rWidth = (int)resWidth;
+		rHeight = (int)resHeight;
+		setSize(rWidth-150, rHeight-150);
 		addImageLoadMenu();
 		addManipulativeTestMenu();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
@@ -54,7 +75,8 @@ public class Driver extends JApplet {
 	public void loadImage(String imageLocation) {
 		loadedImage = il.loadImageWithJAI(imageLocation);
 		displayJAIimage = new DisplayJAI(loadedImage);
-		imageHolder.add(new JScrollPane(displayJAIimage));
+//		scrollPane = new JScrollPane(displayJAIimage);
+		imageHolder.add(displayJAIimage);
 		welcomeJLabel.setVisible(false);
 	}
 	
@@ -85,17 +107,82 @@ public class Driver extends JApplet {
 	    this.repaint();
 	}
 	
-	public void manipulativeTest() {		
-		imageHolder.removeAll();
+	public void defineEyeSize(int centerEyeX, int centerEyeY) {
+		JSlider radiusSlider = new JSlider(JSlider.HORIZONTAL);
+		radiusSlider.setMinimum(2);
+		if(loadedImage.getWidth() >= loadedImage.getHeight()) {
+			radiusSlider.setMaximum(loadedImage.getHeight()-1);
+		}
+		else {
+			radiusSlider.setMaximum(loadedImage.getWidth()-1);
+		}
+		imageHolder.getParent().add(radiusSlider);
+		imageHolder.getParent().repaint();
+	}
+	
+	public void grabEyeLocation() {
+		imageHolder.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		
-		TiledImage myTiledImage = alterPixelsData();
-		loadedImage = myTiledImage.createSnapshot();
-		displayJAIimage = new DisplayJAI(loadedImage);
-		imageHolder.add(new JScrollPane(displayJAIimage));
-		welcomeJLabel.setText("");
-		welcomeJLabel.setVisible(true);
-		welcomeJLabel.setVisible(false);
+		scrollPane.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				int eyeX = scrollPane.getMousePosition().x;
+				int eyeY = scrollPane.getMousePosition().y;
+				System.out.println("Eye center: " + eyeX + ", " + eyeY);
+				scrollPane.setCursor(Cursor.getDefaultCursor());
+				System.out.println("Component count for the scrollbar: " + scrollPane.getComponentCount());
+				for(Component c : scrollPane.getComponents()) {
+					System.out.println(c.getName() + " " + c.getHeight() + " " + c.getWidth());
+				}
+				defineEyeSize(eyeX, eyeY);
+			}
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				System.out.println("Mouse was pressed.");
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseEntered(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void mouseExited(MouseEvent e) {
+				// TODO Auto-generated method stub
+				
+			}  });
+		System.out.println("created the mouse listener for red eye.");
+	}
+	
+	
+	/**
+	 * This method was used for manipulating pixels and further transformed into 
+	 * trying to fix the red eye problem.
+	 */
+	public void fixRedEye() {		
+//		imageHolder.removeAll();
+//		imageHolder.validate();
+//		imageHolder.add(new JScrollPane(displayJAIimage));
+//		imageHolder.add(welcomeJLabel);
+		grabEyeLocation();
 		
+//		TiledImage myTiledImage = alterPixelsData();
+//		loadedImage = myTiledImage.createSnapshot();
+//		displayJAIimage = new DisplayJAI(loadedImage);
+//		imageHolder.add(new JScrollPane(displayJAIimage));
+//		welcomeJLabel.setText("");
+//		welcomeJLabel.setVisible(true);
+//		welcomeJLabel.setVisible(false);
+//		
 		this.getContentPane().repaint();
 		imageHolder.repaint();
 		this.repaint();
@@ -290,21 +377,12 @@ public class Driver extends JApplet {
 				for(int band=0;band<nbands;band++) {
 //					if(h == height/2 && w == height/2) { //Changing pixel near the center of the image.
 						if(band == 0) {
-//							System.out.println("Value: " + pixels[pixelIndex+band]);
-//							pixels[pixelIndex+band] = 255;
-//							pixels[(pixelIndex-1)+band] = 255;
 							r = pixels[pixelIndex+band];
 						}
 						else if(band == 1) {
-//							System.out.println("Value: " + pixels[pixelIndex+band]);
-//							pixels[pixelIndex+band] = 0;
-//							pixels[(pixelIndex-1)+band] = 0;
 							g = pixels[pixelIndex+band];
 						}
 						else {
-//							System.out.println("Value: " + pixels[pixelIndex+band]);
-//							pixels[pixelIndex+band] = 0;
-//							pixels[(pixelIndex-1)+band] = 0;
 							b = pixels[pixelIndex+band];
 							if(isRedEyeValues(r, g, b)) {
 								redPixels.add(new Pixel(x, y));
@@ -325,7 +403,7 @@ public class Driver extends JApplet {
 	}
 	
 	public void addManipulativeTestMenu() {
-		JMenuItem manipulativeTestOption = new JMenuItem("Manipulate Image");
+		JMenuItem manipulativeTestOption = new JMenuItem("Fix Red Eye");
 	    mainMenu.add(manipulativeTestOption);
 	    mainMenuBar.add(mainMenu);
 	    this.setJMenuBar(mainMenuBar);
@@ -335,7 +413,7 @@ public class Driver extends JApplet {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				manipulativeTest();
+				fixRedEye();
 				repaint();
 			}
 		});
