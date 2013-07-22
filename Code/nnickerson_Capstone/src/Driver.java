@@ -4,13 +4,16 @@ import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -20,8 +23,10 @@ import java.util.List;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
+import javax.swing.BorderFactory;
 import javax.swing.JApplet;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -29,6 +34,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import com.sun.media.jai.widget.DisplayJAI;
 
@@ -54,6 +61,11 @@ public class Driver extends JApplet {
 	JScrollPane scrollPane = new JScrollPane();
 	int rWidth = 500;
 	int rHeight = 500;
+	BufferedImage redEyeCircleBI;
+	Graphics2D redEyeCircle;
+	int redEyeCenterX = 0;
+	int redEyeCenterY = 0;
+	int redEyeRadius = 0;
 
 	public void init() {
 		setupApplet();
@@ -67,7 +79,7 @@ public class Driver extends JApplet {
 		rHeight = (int)resHeight;
 		setSize(rWidth-150, rHeight-150);
 		addImageLoadMenu();
-		addManipulativeTestMenu();
+		addRedEyeMenu();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
 	}
@@ -108,34 +120,63 @@ public class Driver extends JApplet {
 	}
 	
 	public void defineEyeSize(int centerEyeX, int centerEyeY) {
-		JSlider radiusSlider = new JSlider(JSlider.HORIZONTAL);
+		JFrame sliderFrame = new JFrame("Slide the slider to fit over the iris in a red eye.");
+		final JSlider radiusSlider = new JSlider(JSlider.HORIZONTAL);
+		sliderFrame.add(radiusSlider);
 		radiusSlider.setMinimum(2);
+		radiusSlider.setMaximum((int)((double)(rHeight)*.9));
 		if(loadedImage.getWidth() >= loadedImage.getHeight()) {
 			radiusSlider.setMaximum(loadedImage.getHeight()-1);
 		}
 		else {
 			radiusSlider.setMaximum(loadedImage.getWidth()-1);
 		}
-		imageHolder.getParent().add(radiusSlider);
-		imageHolder.getParent().repaint();
+		sliderFrame.setSize(400, 110);
+		sliderFrame.setVisible(true);
+		sliderFrame.repaint();
+		radiusSlider.setBorder(BorderFactory.createBevelBorder(2));
+		radiusSlider.setMajorTickSpacing(rHeight/10);
+		radiusSlider.setMinorTickSpacing(rHeight/50);
+		radiusSlider.setPaintLabels(true);
+		radiusSlider.setPaintTicks(true);
+		radiusSlider.setPaintTrack(true);
+		radiusSlider.setVisible(true);
+		radiusSlider.repaint();
+		
+		//Radius Listeners//
+		radiusSlider.addChangeListener(new ChangeListener() {
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				redEyeRadius = radiusSlider.getValue();
+				System.out.println("Red Eye Radius: " + redEyeRadius);
+			    redEyeCircleBI = new BufferedImage(redEyeRadius, redEyeRadius, BufferedImage.TYPE_INT_RGB);
+			    redEyeCircle = redEyeCircleBI.createGraphics();
+			    redEyeCircle.setColor(Color.cyan);
+			    redEyeCircle.drawOval(300, 300, 100, 100);
+			    paint2DGraphics(redEyeCircle);
+			} 
+			});
+		//End of radius Listeners//
+	}
+	
+	public void paint2DGraphics(Graphics2D g2d) {
+		imageHolder.paintComponents(g2d);
+		imageHolder.repaint();
 	}
 	
 	public void grabEyeLocation() {
 		imageHolder.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		
-		scrollPane.addMouseListener(new MouseListener() {
+		imageHolder.addMouseListener(new MouseListener() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				int eyeX = scrollPane.getMousePosition().x;
-				int eyeY = scrollPane.getMousePosition().y;
-				System.out.println("Eye center: " + eyeX + ", " + eyeY);
-				scrollPane.setCursor(Cursor.getDefaultCursor());
-				System.out.println("Component count for the scrollbar: " + scrollPane.getComponentCount());
-				for(Component c : scrollPane.getComponents()) {
-					System.out.println(c.getName() + " " + c.getHeight() + " " + c.getWidth());
-				}
-				defineEyeSize(eyeX, eyeY);
+				redEyeCenterX = imageHolder.getMousePosition().x;
+				redEyeCenterY = imageHolder.getMousePosition().y;
+				System.out.println("Eye center: " + redEyeCenterX + ", " + redEyeCenterY);
+				imageHolder.setCursor(Cursor.getDefaultCursor());
+				defineEyeSize(redEyeCenterX, redEyeCenterY);
 			}
 
 			@Override
@@ -402,14 +443,14 @@ public class Driver extends JApplet {
 		return ti;
 	}
 	
-	public void addManipulativeTestMenu() {
-		JMenuItem manipulativeTestOption = new JMenuItem("Fix Red Eye");
-	    mainMenu.add(manipulativeTestOption);
+	public void addRedEyeMenu() {
+		JMenuItem redEyeOption = new JMenuItem("Fix Red Eye");
+	    mainMenu.add(redEyeOption);
 	    mainMenuBar.add(mainMenu);
 	    this.setJMenuBar(mainMenuBar);
 	    
 	    //Listeners//
-	    manipulativeTestOption.addActionListener(new ActionListener() {
+	    redEyeOption.addActionListener(new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -424,7 +465,6 @@ public class Driver extends JApplet {
 	}
 	
 //	public void paint(Graphics g) {
-//		// g.drawImage(image, 0, 0, 1360, 768, null);
-////		g.drawOval(x, y, width, height)
+//		g.drawOval(300, 300, 200, 200);
 //	}
 }
