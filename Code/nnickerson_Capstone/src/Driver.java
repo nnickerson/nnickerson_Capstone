@@ -1,3 +1,5 @@
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -25,6 +27,7 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -32,8 +35,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -62,10 +67,15 @@ public class Driver extends JApplet {
 	int rWidth = 500;
 	int rHeight = 500;
 	BufferedImage redEyeCircleBI;
-	Graphics2D redEyeCircle;
+	Graphics redEyeCircle;
 	int redEyeCenterX = 0;
 	int redEyeCenterY = 0;
-	int redEyeRadius = 0;
+	int redEyeDiameter = 0;
+	JSlider radiusSlider;
+	JFrame sliderFrame;
+	RedEyeCirclePanel recp;
+	JFrame dynamicCircle;
+	Graphics previousGraphics;
 
 	public void init() {
 		setupApplet();
@@ -120,9 +130,15 @@ public class Driver extends JApplet {
 	}
 	
 	public void defineEyeSize(int centerEyeX, int centerEyeY) {
-		JFrame sliderFrame = new JFrame("Slide the slider to fit over the iris in a red eye.");
-		final JSlider radiusSlider = new JSlider(JSlider.HORIZONTAL);
-		sliderFrame.add(radiusSlider);
+		sliderFrame = new JFrame("Slide the slider to fit over the iris in a red eye.");
+		sliderFrame.setLayout(new BorderLayout());
+		radiusSlider = new JSlider(JSlider.HORIZONTAL);
+		JButton fixRedEyeButton = new JButton("Fix it!");
+		sliderFrame.add(fixRedEyeButton, BorderLayout.PAGE_END);
+		fixRedEyeButton.setVisible(true);
+		fixRedEyeButton.repaint();
+		sliderFrame.repaint();
+		sliderFrame.add(radiusSlider, BorderLayout.PAGE_START);
 		radiusSlider.setMinimum(2);
 		radiusSlider.setMaximum((int)((double)(rHeight)*.9));
 		if(loadedImage.getWidth() >= loadedImage.getHeight()) {
@@ -142,23 +158,45 @@ public class Driver extends JApplet {
 		radiusSlider.setPaintTrack(true);
 		radiusSlider.setVisible(true);
 		radiusSlider.repaint();
+		redEyeCircle = displayJAIimage.getGraphics();
+		
+		eyeLineup();
 		
 		//Radius Listeners//
 		radiusSlider.addChangeListener(new ChangeListener() {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				redEyeRadius = radiusSlider.getValue();
-				System.out.println("Red Eye Radius: " + redEyeRadius);
-			    redEyeCircleBI = new BufferedImage(redEyeRadius, redEyeRadius, BufferedImage.TYPE_INT_RGB);
-			    redEyeCircle = redEyeCircleBI.createGraphics();
-			    redEyeCircle.setColor(Color.cyan);
-			    redEyeCircle.drawOval(300, 300, 100, 100);
-			    paint2DGraphics(redEyeCircle);
+				displayJAIimage.paint(previousGraphics);
+				eyeLineup();
+			}
+		});
+		
+		fixRedEyeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				for(MouseListener ml : imageHolder.getMouseListeners()) {
+					imageHolder.removeMouseListener(ml);
+				}
+				fixRedEye();
 			} 
-			});
+		});
 		//End of radius Listeners//
 	}
+	
+	public void eyeLineup() {
+		
+		redEyeDiameter = radiusSlider.getValue();
+		System.out.println("Red Eye Radius: " + redEyeDiameter);
+//	    redEyeCircle.setStroke(new BasicStroke());
+		int previousCenterX = redEyeCenterX;
+		int previousCenterY = redEyeCenterY;
+	    redEyeCircle.drawOval(redEyeCenterX-(redEyeDiameter/2), redEyeCenterY-(redEyeDiameter/2), redEyeDiameter, redEyeDiameter);
+//	    redEyeCircle.setPaint(Color.green);
+	    redEyeCenterX = previousCenterX;
+	    redEyeCenterY = previousCenterY;
+	    previousGraphics = redEyeCircle;
+	} 
 	
 	public void paint2DGraphics(Graphics2D g2d) {
 		imageHolder.paintComponents(g2d);
@@ -176,6 +214,9 @@ public class Driver extends JApplet {
 				redEyeCenterY = imageHolder.getMousePosition().y;
 				System.out.println("Eye center: " + redEyeCenterX + ", " + redEyeCenterY);
 				imageHolder.setCursor(Cursor.getDefaultCursor());
+				for(MouseListener ml : imageHolder.getMouseListeners()) {
+					imageHolder.removeMouseListener(ml);
+				}
 				defineEyeSize(redEyeCenterX, redEyeCenterY);
 			}
 
@@ -204,27 +245,74 @@ public class Driver extends JApplet {
 		System.out.println("created the mouse listener for red eye.");
 	}
 	
+	public TiledImage fixRedEyePixels() {
+		int width = loadedImage.getWidth();
+		int height = loadedImage.getHeight();
+		SampleModel mySampleModel = loadedImage.getSampleModel();
+		int nbands = mySampleModel.getNumBands();
+		Raster readableRaster = loadedImage.getData();
+		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
+		int[] pixels = new int[nbands*width*height];
+		readableRaster.getPixels(0, 0, width, height, pixels);
+		int pixelIndex = 0;
+		int r = 0, g = 0, b = 0;
+		int yMax = redEyeCenterY+redEyeDiameter;
+		int xMax = redEyeCenterX+redEyeDiameter;
+		int yMin = redEyeCenterY-redEyeDiameter;
+		int xMin = redEyeCenterX-redEyeDiameter;
+		
+		if(yMax >= imageHolder.getHeight()) {
+			yMax = imageHolder.getHeight();
+		}
+		if(xMax >= imageHolder.getWidth()) {
+			xMax = imageHolder.getWidth();
+		}
+		if(yMin < 0) {
+			yMin = 0;
+		}
+		if(xMin < 0) {
+			xMin = 0;
+		}
+		
+		for(int y = yMin;y<yMax;y++) {
+			for(int x = xMin;x<xMax;x++)
+			{
+				pixelIndex = y*width*nbands+x*nbands;
+				for(int band=0;band<nbands;band++) {
+						if(isRedEyeValues(r, g, b)) {
+							redPixels.add(new Pixel(x, y));
+							pixels[pixelIndex+(band)] = 0;
+						}
+				}
+			}
+		}
+//		pixels = createBoundingBoxes(width, height, nbands, pixels);
+		writableRaster.setPixels(0, 0, width, height, pixels);
+		TiledImage ti = new TiledImage(loadedImage,1,1);
+		ti.setData(writableRaster);
+		return ti;
+	}
+	
 	
 	/**
 	 * This method was used for manipulating pixels and further transformed into 
 	 * trying to fix the red eye problem.
 	 */
-	public void fixRedEye() {		
-//		imageHolder.removeAll();
-//		imageHolder.validate();
-//		imageHolder.add(new JScrollPane(displayJAIimage));
-//		imageHolder.add(welcomeJLabel);
-		grabEyeLocation();
+	public void fixRedEye() {
+		sliderFrame.dispose();
 		
-//		TiledImage myTiledImage = alterPixelsData();
-//		loadedImage = myTiledImage.createSnapshot();
-//		displayJAIimage = new DisplayJAI(loadedImage);
-//		imageHolder.add(new JScrollPane(displayJAIimage));
+		TiledImage myTiledImage = alterPixelsData();
+		loadedImage = myTiledImage.createSnapshot();
+		displayJAIimage = new DisplayJAI(loadedImage);
+		imageHolder.add(displayJAIimage);
 //		welcomeJLabel.setText("");
 //		welcomeJLabel.setVisible(true);
 //		welcomeJLabel.setVisible(false);
 //		
 		this.getContentPane().repaint();
+		
+		this.setSize(this.getWidth()-1, this.getHeight()-1);
+		this.setSize(this.getWidth()+1, this.getHeight()+1);
 		imageHolder.repaint();
 		this.repaint();
 		repaint();
@@ -274,21 +362,21 @@ public class Driver extends JApplet {
 		
 		
 		int averageGrayscale = (r+g+b)/3;
-		if(hue >= .95 && hue <= 1.05) {
-			if(saturation > .43) {
-				if(brightness > .1 && brightness < .9) {
-					if(averageGrayscale < 205 && averageGrayscale > 50) {
-						if(g-b < 75) {
-							if(g < r && b < r) {
-								if(pixelRedRatio >= 2.25) {
+//		if(hue >= .65 && hue <= 1.25) {
+//			if(saturation > .43) {
+//				if(brightness > .05 && brightness < .95) {
+//					if(averageGrayscale < 230 && averageGrayscale > 25) {
+//						if(g-b < 75) {
+//							if(g < r && b < r) {
+								if(pixelRedRatio >= 1.50) {
 									isRedEyeValue = true;
 								}
-							}
-						}
-					}
-				}
-			}
-		}
+//							}
+//						}
+//					}
+//				}
+//			}
+//		}
 		
 		return isRedEyeValue;
 	}
@@ -411,8 +499,24 @@ public class Driver extends JApplet {
 		readableRaster.getPixels(0, 0, width, height, pixels);
 		int pixelIndex = 0;
 		int r = 0, g = 0, b = 0;
-		for(int y=0;y<height;y++) {
-			for(int x=0;x<width;x++)
+		int y1 = 0;
+		int x1 = 0;
+		int xMax = width;
+		int yMax = height;
+		if(redEyeCenterY-(redEyeDiameter/2) >= 0) {
+			y1 = redEyeCenterY-(redEyeDiameter/2);
+		}
+		if(redEyeCenterX-(redEyeDiameter/2) >= 0) {
+			x1 = redEyeCenterX-(redEyeDiameter/2);
+		}
+		if(redEyeCenterX+(redEyeDiameter/2) <= width) {
+			xMax = redEyeCenterX+(redEyeDiameter/2);
+		}
+		if(redEyeCenterY+(redEyeDiameter/2) <= height) {
+			yMax = redEyeCenterY+(redEyeDiameter/2);
+		}
+		for(int y=y1;y<yMax;y++) {
+			for(int x=x1;x<xMax;x++)
 			{
 				pixelIndex = y*width*nbands+x*nbands;
 				for(int band=0;band<nbands;band++) {
@@ -426,7 +530,6 @@ public class Driver extends JApplet {
 						else {
 							b = pixels[pixelIndex+band];
 							if(isRedEyeValues(r, g, b)) {
-								redPixels.add(new Pixel(x, y));
 								pixels[pixelIndex+(band)] = 0;
 								pixels[pixelIndex+(band-1)] = 0;
 								pixels[pixelIndex+(band-2)] = 0;
@@ -454,7 +557,7 @@ public class Driver extends JApplet {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				fixRedEye();
+				grabEyeLocation();
 				repaint();
 			}
 		});
