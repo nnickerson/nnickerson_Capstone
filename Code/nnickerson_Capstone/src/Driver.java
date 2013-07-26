@@ -1,15 +1,12 @@
-import java.awt.BasicStroke;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.Stroke;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,7 +19,6 @@ import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
 import javax.swing.BorderFactory;
@@ -34,11 +30,8 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -227,19 +220,16 @@ public class Driver extends JApplet {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 
 			@Override
 			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
 				
 			}  });
 		System.out.println("created the mouse listener for red eye.");
@@ -368,7 +358,7 @@ public class Driver extends JApplet {
 //					if(averageGrayscale < 230 && averageGrayscale > 25) {
 //						if(g-b < 75) {
 //							if(g < r && b < r) {
-								if(pixelRedRatio >= 1.50) {
+								if(pixelRedRatio >= 1.67) {
 									isRedEyeValue = true;
 								}
 //							}
@@ -531,15 +521,15 @@ public class Driver extends JApplet {
 							b = pixels[pixelIndex+band];
 							if(isRedEyeValues(r, g, b)) {
 								pixels[pixelIndex+(band)] = 0;
-								pixels[pixelIndex+(band-1)] = 0;
-								pixels[pixelIndex+(band-2)] = 0;
+								pixels[pixelIndex+(band-1)] = 10;
+								pixels[pixelIndex+(band-2)] = 10;
 							}
 						}
 //					}
 				}
 			}
 		}
-		pixels = createBoundingBoxes(width, height, nbands, pixels);
+//		pixels = createBoundingBoxes(width, height, nbands, pixels);
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(loadedImage,1,1);
 		ti.setData(writableRaster);
