@@ -1,34 +1,37 @@
-import java.applet.AppletContext;
+package inspiram;
+
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
-import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
 import javax.media.jai.*;
 
-import com.sun.media.jai.widget.DisplayJAI;
-
+/**
+ * 
+ * @author nnickerson
+ *
+ */
 
 public class ImageLoader {
-//	String fileLocation = "C:/mcShaders2 - Copy.png";
-//	public Image loadImage(AppletContext context) {
-//		AppletContext appletContext = context;
-//		Image image = null;
-//		try {
-//			File i = new File(fileLocation);
-//			image = ImageIO.read(i);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//		
-//		return image;
-//	}
 	
-	public PlanarImage loadImageWithJAI(String fileLocation) {
+	String fileLocation = "InspiramLogo.png";
+	
+	public Image loadLogoAsImage() {
+		Image image = null;
+		try {
+			File i = new File(fileLocation);
+			image = ImageIO.read(i);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return image;
+	}
+	
+	public PlanarImage loadPlanarImageWithJAI(String fileLocation) {
 		ParameterBlock pb = new ParameterBlock();
 		pb.add(fileLocation);
 		PlanarImage loadedImage = JAI.create("fileLoad", pb);

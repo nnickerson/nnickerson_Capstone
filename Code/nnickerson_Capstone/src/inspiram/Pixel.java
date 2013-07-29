@@ -1,6 +1,5 @@
-/**
- * 
- */
+package inspiram;
+
 
 /**
  * @author nnickerson

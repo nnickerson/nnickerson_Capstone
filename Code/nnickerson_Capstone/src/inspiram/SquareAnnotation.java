@@ -1,7 +1,10 @@
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Stroke;
+package inspiram;
 
+/**
+ * 
+ * @author nnickerson
+ *
+ */
 
 public class SquareAnnotation {
 	

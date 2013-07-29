@@ -1,6 +1,7 @@
+package inspiram;
+
 import java.awt.Graphics;
 import java.awt.LayoutManager;
-
 import javax.swing.JPanel;
 
 

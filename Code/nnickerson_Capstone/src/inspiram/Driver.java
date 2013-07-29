@@ -1,9 +1,11 @@
+package inspiram;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -37,9 +39,6 @@ import javax.swing.event.ChangeListener;
 
 import com.sun.media.jai.widget.DisplayJAI;
 
-/**
- * 
- */
 
 /**
  * @author nnickerson
@@ -69,12 +68,16 @@ public class Driver extends JApplet {
 	RedEyeCirclePanel recp;
 	JFrame dynamicCircle;
 	Graphics previousGraphics;
+	Frame appletFrame;
 
 	public void init() {
 		setupApplet();
 	}
 	
 	public void setupApplet() {
+		appletFrame = (Frame)this.getParent().getParent();
+		appletFrame.setTitle("Inspiram");
+		appletFrame.setIconImage(il.loadLogoAsImage());
 		Dimension resolution = Toolkit.getDefaultToolkit().getScreenSize();
 		double resWidth = resolution.getWidth();
 		double resHeight = resolution.getHeight();
@@ -88,7 +91,7 @@ public class Driver extends JApplet {
 	}
 	
 	public void loadImage(String imageLocation) {
-		loadedImage = il.loadImageWithJAI(imageLocation);
+		loadedImage = il.loadPlanarImageWithJAI(imageLocation);
 		displayJAIimage = new DisplayJAI(loadedImage);
 //		scrollPane = new JScrollPane(displayJAIimage);
 		imageHolder.add(displayJAIimage);
@@ -371,57 +374,6 @@ public class Driver extends JApplet {
 		return isRedEyeValue;
 	}
 	
-//	public int[] findEye(int x, int y, int amountOfPixels, int[] pixels, int width, int height, int bands) {
-//		int[] ps = pixels;
-//		int xPlus = x;
-//		int yPlus = y;
-//		int xNeg = 0;
-//		int yNeg = 0;
-//		int pixelIndexPlus = 0;
-//		int pixelIndexNeg = 0;
-//		
-//		for(int i = 0; i < amountOfPixels; i++) {
-//			if(i < amountOfPixels) {
-//				xPlus += i;
-//				yPlus += amountOfPixels-i;
-//				if(xPlus > width) { xPlus = width; }
-//				if(yPlus > height) { yPlus = height; }
-//				xNeg = xPlus*(-1);
-//				yNeg = yPlus*(-1);
-//				if(xNeg < width) { xNeg = 0; }
-//				if(yNeg < height) { yNeg = 0; }
-//				pixelIndexPlus = yPlus*width*bands+xPlus*bands;
-//				pixelIndexNeg = (yPlus+yNeg)*width*bands+(xPlus+xNeg)*bands;
-//				pixels[pixelIndexPlus+(0)] = 255;
-//				pixels[pixelIndexPlus+(1)] = 255;
-//				pixels[pixelIndexPlus+(2)] = 255;
-//				pixels[pixelIndexNeg+(0)] = 255;
-//				pixels[pixelIndexNeg+(1)] = 255;
-//				pixels[pixelIndexNeg+(2)] = 255;
-//			}
-//			else {
-//				xPlus += amountOfPixels-i;
-//				yPlus += i;
-//				if(xPlus > width) { xPlus = width; }
-//				if(yPlus > height) { yPlus = height; }
-//				xNeg = xPlus*(-1);
-//				yNeg = yPlus*(-1);
-//				if(xNeg < width) { xNeg = 0; }
-//				if(yNeg < height) { yNeg = 0; }
-//				pixelIndexPlus = yPlus*width*bands+xPlus*bands;
-//				pixelIndexNeg = (yPlus+yNeg)*width*bands+(xPlus+xNeg)*bands;
-//				pixels[pixelIndexPlus+(0)] = 255;
-//				pixels[pixelIndexPlus+(1)] = 255;
-//				pixels[pixelIndexPlus+(2)] = 255;
-//				pixels[pixelIndexNeg+(0)] = 255;
-//				pixels[pixelIndexNeg+(1)] = 255;
-//				pixels[pixelIndexNeg+(2)] = 255;
-//			}
-//		}
-//		
-//		return ps;
-//	}
-	
 	public int[] createBoundingBoxes(int width, int height, int nbands, int[] pixels) {
 		List<List<Pixel>> boxedPixels = new ArrayList<List<Pixel>>();
 		int[] newPixels = pixels;
@@ -438,7 +390,6 @@ public class Driver extends JApplet {
 				}
 				if(pixList.size() >= 1) {
 					boxedPixels.add(pixList);
-//					newPixels = findEye(pixList.get(pixList.size()/2).x, pixList.get(pixList.size()/2).y, pixList.size()*2, newPixels, width, height, nbands);
 				}
 			}
 		}
@@ -474,7 +425,6 @@ public class Driver extends JApplet {
 			sa.createBoundingBox(width, nbands, newPixels);
 		}
 		
-		//Need to find the area where the pixels occur
 		return newPixels;
 	}
 	
