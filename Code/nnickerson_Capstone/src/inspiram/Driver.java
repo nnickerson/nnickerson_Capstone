@@ -10,6 +10,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -54,6 +55,9 @@ public class Driver extends JApplet {
 	JMenu mainMenu;
 	JMenuItem loadImageOption;
 	JMenuItem createLineOption;
+	JMenuItem linearBezierOption;
+	JMenuItem quadraticBezierOption;
+	JMenuItem highOrderBezierOption;
 	JLabel welcomeJLabel;
 	List<Pixel> redPixels = new ArrayList<Pixel>();
 	JScrollPane scrollPane = new JScrollPane();
@@ -76,6 +80,7 @@ public class Driver extends JApplet {
 	int lineEndingX = 0;
 	int lineEndingY = 0;
 	int lineWidth = 1;
+	JApplet thisApplet = this;
 
 	public void init() {
 		setupApplet();
@@ -94,8 +99,54 @@ public class Driver extends JApplet {
 		addImageLoadMenu();
 		addRedEyeMenu();
 		addCreateLineMenu();
+		addBezierCurveDemos();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
+	}
+	
+	public void pasteImageFromClipboard() {
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	}
+	
+	public void addBezierCurveDemos() {
+		linearBezierOption = new JMenuItem("DEMO: Linear Bezier Curve");
+		quadraticBezierOption = new JMenuItem("DEMO: Quadratic Bezier Curve");
+		highOrderBezierOption = new JMenuItem("DEMO: High Bezier Curve");
+		linearBezierOption.setName("linearbezier");
+		quadraticBezierOption.setName("quadraticBezier");
+		highOrderBezierOption.setName("highOrderBezier");
+	    mainMenu.add(linearBezierOption);
+	    mainMenu.add(quadraticBezierOption);
+	    mainMenu.add(highOrderBezierOption);
+	    this.setJMenuBar(mainMenuBar);
+	    
+	    //Listeners//
+	    ActionListener bezierListener = new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JMenuItem itemChosen = (JMenuItem)e.getSource();
+				BezierCurveDemo bcd = new BezierCurveDemo(thisApplet);
+				if(itemChosen.getName().equalsIgnoreCase("linearBezier")) {
+					displayTiledImage(bcd.performLinearCurve(loadedImage));
+				}
+				else if(itemChosen.getName().equalsIgnoreCase("quadraticBezier")) {
+					bcd.performQuadraticCurve();
+				}
+				else if(itemChosen.getName().equalsIgnoreCase("highOrderBezier")) {
+					bcd.performHighOrderCurve();
+				}
+			}
+		};
+	    //End of listeners//
+		
+		linearBezierOption.addActionListener(bezierListener);
+		quadraticBezierOption.addActionListener(bezierListener);
+		highOrderBezierOption.addActionListener(bezierListener);
+	    
+	    this.getContentPane().repaint();
+	    imageHolder.repaint();
+	    this.repaint();
 	}
 	
 	public void loadImage(String imageLocation) {
@@ -147,7 +198,15 @@ public class Driver extends JApplet {
 					for(MouseListener ml : imageHolder.getMouseListeners()) {
 						imageHolder.removeMouseListener(ml);
 					}
-					double slope = ((lineEndingY-lineBeginningY)/(lineEndingX-lineBeginningX));
+					double yDifference = lineEndingY-lineBeginningY;
+					double xDifference = lineEndingX-lineBeginningX;
+//					if(yDifference < 0) {
+//						yDifference = lineBeginningY - lineEndingY;
+//					}
+//					if(xDifference < 0) {
+//						xDifference = lineBeginningX - lineEndingX;
+//					}
+					double slope = (((yDifference)/(xDifference))/*+((yDifference)%(xDifference)*/);
 					System.out.println("Line end click!");
 					drawLine(lineBeginningX, lineBeginningY, lineEndingX, lineEndingY, slope);
 				}
@@ -180,41 +239,134 @@ public class Driver extends JApplet {
 	}
 	
 	public void drawLine(int lineBX, int lineBY, int lineEX, int lineEY, double slope) {
-		int width = loadedImage.getWidth();
-		int height = loadedImage.getHeight();
-		SampleModel mySampleModel = loadedImage.getSampleModel();
-		int nbands = mySampleModel.getNumBands();
-		Raster readableRaster = loadedImage.getData();
-		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
-		int[] pixels = new int[nbands*width*height];
-		readableRaster.getPixels(0, 0, width, height, pixels);
-		int pixelIndex = 0;
-		for(int y=lineBY;y<lineEY;y++) {
-			for(int x=lineBX;x<lineEX;x++)
-			{
-				System.out.println("Checking pixels within the range!");
-				if((slope*x == y)) {
-					pixelIndex = y*width*nbands+x*nbands;
-					for(int band=0;band<nbands;band++) {					
-						pixels[(pixelIndex-0)+(band)] = 255;
-						pixels[(pixelIndex-1)+(band)] = 255;
-						pixels[(pixelIndex-2)+(band)] = 255;
-						pixels[(pixelIndex-3)+(band)] = 255;
-						pixels[(pixelIndex-4)+(band)] = 255;
-						pixels[(pixelIndex-5)+(band)] = 255;
-						pixels[(pixelIndex-6)+(band)] = 255;
-						pixels[(pixelIndex-7)+(band)] = 255;
-						pixels[(pixelIndex-8)+(band)] = 255;
-						pixels[(pixelIndex-9)+(band)] = 255;
-						System.out.println("Created a pixel in the Line!");
+//		int width = loadedImage.getWidth();
+//		int height = loadedImage.getHeight();
+//		SampleModel mySampleModel = loadedImage.getSampleModel();
+//		int nbands = mySampleModel.getNumBands();
+//		Raster readableRaster = loadedImage.getData();
+//		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
+//		int[] pixels = new int[nbands*width*height];
+//		readableRaster.getPixels(0, 0, width, height, pixels);
+//		int pixelIndex = 0;
+//		int biggestX = 0;
+//		int biggestY = 0;
+//		int smallestX = 0;
+//		int smallestY = 0;
+//		boolean isEndXBigger = false;
+//		boolean isEndYBigger = false;
+//		
+//		if(lineEX >= lineBX) {
+//			biggestX = lineEX;
+//			smallestX = lineBX;
+//			isEndXBigger = true;
+//		}
+//		else {
+//			biggestX = lineBX;
+//			smallestX = lineEX;
+//			slope *= -1;
+//		}
+//		
+//		if(lineEY >= lineBY) {
+//			biggestY = lineEY;
+//			smallestY = lineBY;
+//			isEndYBigger = true;
+//		}
+//		else {
+//			biggestY = lineBY;
+//			slope *= -1;
+//			smallestY = lineEY;
+//		}
+//		
+//		double yIntercept = ((slope*lineBX)+lineBY);
+//		System.out.println("SLOPE FOR CREATE LINE: " + slope);
+//		for(int y=lineBY;y<=biggestY && y>=smallestY;y=y-0) {
+//			for(int x=lineBX;x<=biggestX && x>=smallestX;y=y-0) {
+//				System.out.println(((slope*x)+yIntercept) + ", " + y + ", " + yIntercept);
+//				if(((slope*x)+yIntercept) == y) {
+//					pixelIndex = y*width*nbands+x*nbands;
+//					for(int band=0;band<nbands;band++) {					
+//						pixels[(pixelIndex-0)+(band)] = 255;
+//						pixels[(pixelIndex-1)+(band)] = 255;
+//						pixels[(pixelIndex-2)+(band)] = 255;
+//						pixels[(pixelIndex-3)+(band)] = 255;
+//						pixels[(pixelIndex-4)+(band)] = 255;
+//						pixels[(pixelIndex-5)+(band)] = 255;
+//					}
+//				}
+//				if(isEndXBigger) {
+//					x++;
+//				}
+//				else if(!isEndXBigger) {
+//					x--;
+//				}
+//			}
+//				if(isEndYBigger) {
+//					y++;
+//				}
+//				else if(!isEndYBigger) {
+//					y--;
+//				}
+//			
+//		}
+//		writableRaster.setPixels(0, 0, width, height, pixels);
+//		TiledImage ti = new TiledImage(loadedImage,1,1);
+//		ti.setData(writableRaster);
+//		TiledImage myTiledImage = ti;
+//		displayTiledImage(myTiledImage);
+		
+				int width = loadedImage.getWidth();
+				int height = loadedImage.getHeight();
+				SampleModel mySampleModel = loadedImage.getSampleModel();
+				int nbands = mySampleModel.getNumBands();
+				Raster readableRaster = loadedImage.getData();
+				WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
+				int[] pixels = new int[nbands*width*height];
+				readableRaster.getPixels(0, 0, width, height, pixels);
+				int pixelIndex = 0;
+				for(int y=lineBY;y<lineEY;y++) {
+					for(int x=lineBX;x<lineEX;x++)
+					{
+						if((slope*y == x)) {
+							pixelIndex = y*width*nbands+x*nbands;
+							for(int band=0;band<nbands;band++) {					
+								pixels[(pixelIndex-0)+(band)] = 255;
+								pixels[(pixelIndex-1)+(band)] = 255;
+								pixels[(pixelIndex-2)+(band)] = 255;
+								pixels[(pixelIndex-3)+(band)] = 255;
+								pixels[(pixelIndex-4)+(band)] = 255;
+								pixels[(pixelIndex-5)+(band)] = 255;
+								pixels[(pixelIndex-6)+(band)] = 255;
+								pixels[(pixelIndex-7)+(band)] = 255;
+								pixels[(pixelIndex-8)+(band)] = 255;
+								pixels[(pixelIndex-9)+(band)] = 255;
+							}
+						}
 					}
 				}
-			}
-		}
-		writableRaster.setPixels(0, 0, width, height, pixels);
-		TiledImage ti = new TiledImage(loadedImage,1,1);
-		ti.setData(writableRaster);
-		TiledImage myTiledImage = ti;
+				writableRaster.setPixels(0, 0, width, height, pixels);
+				TiledImage ti = new TiledImage(loadedImage,1,1);
+				ti.setData(writableRaster);
+				TiledImage myTiledImage = ti;
+				loadedImage = myTiledImage.createSnapshot();
+				displayJAIimage = new DisplayJAI(loadedImage);
+				imageHolder.add(displayJAIimage);
+				
+				this.getContentPane().repaint();
+				
+				this.setSize(this.getWidth()-1, this.getHeight()-1);
+				this.setSize(this.getWidth()+1, this.getHeight()+1);
+				imageHolder.repaint();
+				this.repaint();
+				repaint();
+
+	}
+
+	/**
+	 * Takes a TiledImage and turns it into a PlanarImage to be displayed onto a a DisplayJAI. 
+	 * The DisplayJAI is put onto the applet container.
+	 * @param myTiledImage
+	 */
+	public void displayTiledImage(TiledImage myTiledImage) {
 		loadedImage = myTiledImage.createSnapshot();
 		displayJAIimage = new DisplayJAI(loadedImage);
 		imageHolder.add(displayJAIimage);
@@ -425,20 +577,7 @@ public class Driver extends JApplet {
 		sliderFrame.dispose();
 		
 		TiledImage myTiledImage = alterPixelsData();
-		loadedImage = myTiledImage.createSnapshot();
-		displayJAIimage = new DisplayJAI(loadedImage);
-		imageHolder.add(displayJAIimage);
-//		welcomeJLabel.setText("");
-//		welcomeJLabel.setVisible(true);
-//		welcomeJLabel.setVisible(false);
-//		
-		this.getContentPane().repaint();
-		
-		this.setSize(this.getWidth()-1, this.getHeight()-1);
-		this.setSize(this.getWidth()+1, this.getHeight()+1);
-		imageHolder.repaint();
-		this.repaint();
-		repaint();
+		displayTiledImage(myTiledImage);
 	}
 	
 	public float[] getHSB(int r, int b, int g) {
