@@ -53,6 +53,7 @@ public class Driver extends JApplet {
 	JMenuBar mainMenuBar;
 	JMenu mainMenu;
 	JMenuItem loadImageOption;
+	JMenuItem createLineOption;
 	JLabel welcomeJLabel;
 	List<Pixel> redPixels = new ArrayList<Pixel>();
 	JScrollPane scrollPane = new JScrollPane();
@@ -69,6 +70,12 @@ public class Driver extends JApplet {
 	JFrame dynamicCircle;
 	Graphics previousGraphics;
 	Frame appletFrame;
+	int lineClicks = 0;
+	int lineBeginningX = 0;
+	int lineBeginningY = 0;
+	int lineEndingX = 0;
+	int lineEndingY = 0;
+	int lineWidth = 1;
 
 	public void init() {
 		setupApplet();
@@ -86,6 +93,7 @@ public class Driver extends JApplet {
 		setSize(rWidth-150, rHeight-150);
 		addImageLoadMenu();
 		addRedEyeMenu();
+		addCreateLineMenu();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
 	}
@@ -96,6 +104,128 @@ public class Driver extends JApplet {
 //		scrollPane = new JScrollPane(displayJAIimage);
 		imageHolder.add(displayJAIimage);
 		welcomeJLabel.setVisible(false);
+	}
+	
+	public void addCreateLineMenu() {
+	    createLineOption = new JMenuItem("Create Line");
+	    mainMenu.add(createLineOption);
+	    this.setJMenuBar(mainMenuBar);
+	    
+	    //Listeners//
+	    createLineOption.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				getLineLocation();
+			}
+		});
+	    //End of listeners//
+	    
+	    this.getContentPane().repaint();
+	    imageHolder.repaint();
+	    this.repaint();
+	}
+	
+	public void getLineLocation() {
+		imageHolder.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		
+		imageHolder.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if(lineClicks == 0) {
+					lineBeginningX = imageHolder.getMousePosition().x;
+					lineBeginningY = imageHolder.getMousePosition().y;
+					lineClicks++;
+					System.out.println("Line start click!");
+				}
+				else {
+					lineEndingX = imageHolder.getMousePosition().x;
+					lineEndingY = imageHolder.getMousePosition().y;
+					lineClicks = 0;
+					imageHolder.setCursor(Cursor.getDefaultCursor());
+					for(MouseListener ml : imageHolder.getMouseListeners()) {
+						imageHolder.removeMouseListener(ml);
+					}
+					double slope = ((lineEndingY-lineBeginningY)/(lineEndingX-lineBeginningX));
+					System.out.println("Line end click!");
+					drawLine(lineBeginningX, lineBeginningY, lineEndingX, lineEndingY, slope);
+				}
+			}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		});
+	}
+	
+	public void drawLine(int lineBX, int lineBY, int lineEX, int lineEY, double slope) {
+		int width = loadedImage.getWidth();
+		int height = loadedImage.getHeight();
+		SampleModel mySampleModel = loadedImage.getSampleModel();
+		int nbands = mySampleModel.getNumBands();
+		Raster readableRaster = loadedImage.getData();
+		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
+		int[] pixels = new int[nbands*width*height];
+		readableRaster.getPixels(0, 0, width, height, pixels);
+		int pixelIndex = 0;
+		for(int y=lineBY;y<lineEY;y++) {
+			for(int x=lineBX;x<lineEX;x++)
+			{
+				System.out.println("Checking pixels within the range!");
+				if((slope*x == y)) {
+					pixelIndex = y*width*nbands+x*nbands;
+					for(int band=0;band<nbands;band++) {					
+						pixels[(pixelIndex-0)+(band)] = 255;
+						pixels[(pixelIndex-1)+(band)] = 255;
+						pixels[(pixelIndex-2)+(band)] = 255;
+						pixels[(pixelIndex-3)+(band)] = 255;
+						pixels[(pixelIndex-4)+(band)] = 255;
+						pixels[(pixelIndex-5)+(band)] = 255;
+						pixels[(pixelIndex-6)+(band)] = 255;
+						pixels[(pixelIndex-7)+(band)] = 255;
+						pixels[(pixelIndex-8)+(band)] = 255;
+						pixels[(pixelIndex-9)+(band)] = 255;
+						System.out.println("Created a pixel in the Line!");
+					}
+				}
+			}
+		}
+		writableRaster.setPixels(0, 0, width, height, pixels);
+		TiledImage ti = new TiledImage(loadedImage,1,1);
+		ti.setData(writableRaster);
+		TiledImage myTiledImage = ti;
+		loadedImage = myTiledImage.createSnapshot();
+		displayJAIimage = new DisplayJAI(loadedImage);
+		imageHolder.add(displayJAIimage);
+		
+		this.getContentPane().repaint();
+		
+		this.setSize(this.getWidth()-1, this.getHeight()-1);
+		this.setSize(this.getWidth()+1, this.getHeight()+1);
+		imageHolder.repaint();
+		this.repaint();
+		repaint();
 	}
 	
 	public void addImageLoadMenu() {
@@ -183,7 +313,7 @@ public class Driver extends JApplet {
 	public void eyeLineup() {
 		
 		redEyeDiameter = radiusSlider.getValue();
-		System.out.println("Red Eye Radius: " + redEyeDiameter);
+//		System.out.println("Red Eye Radius: " + redEyeDiameter);
 //	    redEyeCircle.setStroke(new BasicStroke());
 		int previousCenterX = redEyeCenterX;
 		int previousCenterY = redEyeCenterY;
@@ -208,7 +338,7 @@ public class Driver extends JApplet {
 			public void mouseClicked(MouseEvent e) {
 				redEyeCenterX = imageHolder.getMousePosition().x;
 				redEyeCenterY = imageHolder.getMousePosition().y;
-				System.out.println("Eye center: " + redEyeCenterX + ", " + redEyeCenterY);
+//				System.out.println("Eye center: " + redEyeCenterX + ", " + redEyeCenterY);
 				imageHolder.setCursor(Cursor.getDefaultCursor());
 				for(MouseListener ml : imageHolder.getMouseListeners()) {
 					imageHolder.removeMouseListener(ml);
@@ -396,7 +526,7 @@ public class Driver extends JApplet {
 		
 		
 		for(List<Pixel> lp : boxedPixels) {
-			System.out.println(lp.toString());
+//			System.out.println(lp.toString());
 			int minX = width;
 			int maxX = 0;
 			int minY = height;
