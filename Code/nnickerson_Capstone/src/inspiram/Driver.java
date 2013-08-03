@@ -74,12 +74,12 @@ public class Driver extends JApplet {
 	JFrame dynamicCircle;
 	Graphics previousGraphics;
 	Frame appletFrame;
-	int lineClicks = 0;
-	int lineBeginningX = 0;
-	int lineBeginningY = 0;
-	int lineEndingX = 0;
-	int lineEndingY = 0;
-	int lineWidth = 1;
+	double lineClicks = 0.0;
+	double lineBeginningX = 0.0;
+	double lineBeginningY = 0.0;
+	double lineEndingX = 0.0;
+	double lineEndingY = 0.0;
+	double lineWidth = 1.0;
 	JApplet thisApplet = this;
 
 	public void init() {
@@ -185,10 +185,11 @@ public class Driver extends JApplet {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if(lineClicks == 0) {
+					System.out.println("100 / -100: " + 100/(-100));
 					lineBeginningX = imageHolder.getMousePosition().x;
 					lineBeginningY = imageHolder.getMousePosition().y;
 					lineClicks++;
-					System.out.println("Line start click!");
+					System.out.println("Line start click! - (" + lineBeginningX + ", " + lineBeginningY + ")");
 				}
 				else {
 					lineEndingX = imageHolder.getMousePosition().x;
@@ -200,14 +201,8 @@ public class Driver extends JApplet {
 					}
 					double yDifference = lineEndingY-lineBeginningY;
 					double xDifference = lineEndingX-lineBeginningX;
-//					if(yDifference < 0) {
-//						yDifference = lineBeginningY - lineEndingY;
-//					}
-//					if(xDifference < 0) {
-//						xDifference = lineBeginningX - lineEndingX;
-//					}
-					double slope = (((yDifference)/(xDifference))/*+((yDifference)%(xDifference)*/);
-					System.out.println("Line end click!");
+					double slope = (((yDifference)/(xDifference)));
+					System.out.println("Line end click! - (" + lineEndingX + ", " + lineEndingY + ")");
 					drawLine(lineBeginningX, lineBeginningY, lineEndingX, lineEndingY, slope);
 				}
 			}
@@ -238,126 +233,64 @@ public class Driver extends JApplet {
 		});
 	}
 	
-	public void drawLine(int lineBX, int lineBY, int lineEX, int lineEY, double slope) {
-//		int width = loadedImage.getWidth();
-//		int height = loadedImage.getHeight();
-//		SampleModel mySampleModel = loadedImage.getSampleModel();
-//		int nbands = mySampleModel.getNumBands();
-//		Raster readableRaster = loadedImage.getData();
-//		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
-//		int[] pixels = new int[nbands*width*height];
-//		readableRaster.getPixels(0, 0, width, height, pixels);
-//		int pixelIndex = 0;
-//		int biggestX = 0;
-//		int biggestY = 0;
-//		int smallestX = 0;
-//		int smallestY = 0;
-//		boolean isEndXBigger = false;
-//		boolean isEndYBigger = false;
-//		
-//		if(lineEX >= lineBX) {
-//			biggestX = lineEX;
-//			smallestX = lineBX;
-//			isEndXBigger = true;
-//		}
-//		else {
-//			biggestX = lineBX;
-//			smallestX = lineEX;
-//			slope *= -1;
-//		}
-//		
-//		if(lineEY >= lineBY) {
-//			biggestY = lineEY;
-//			smallestY = lineBY;
-//			isEndYBigger = true;
-//		}
-//		else {
-//			biggestY = lineBY;
-//			slope *= -1;
-//			smallestY = lineEY;
-//		}
-//		
-//		double yIntercept = ((slope*lineBX)+lineBY);
-//		System.out.println("SLOPE FOR CREATE LINE: " + slope);
-//		for(int y=lineBY;y<=biggestY && y>=smallestY;y=y-0) {
-//			for(int x=lineBX;x<=biggestX && x>=smallestX;y=y-0) {
-//				System.out.println(((slope*x)+yIntercept) + ", " + y + ", " + yIntercept);
-//				if(((slope*x)+yIntercept) == y) {
-//					pixelIndex = y*width*nbands+x*nbands;
-//					for(int band=0;band<nbands;band++) {					
-//						pixels[(pixelIndex-0)+(band)] = 255;
-//						pixels[(pixelIndex-1)+(band)] = 255;
-//						pixels[(pixelIndex-2)+(band)] = 255;
-//						pixels[(pixelIndex-3)+(band)] = 255;
-//						pixels[(pixelIndex-4)+(band)] = 255;
-//						pixels[(pixelIndex-5)+(band)] = 255;
-//					}
-//				}
-//				if(isEndXBigger) {
-//					x++;
-//				}
-//				else if(!isEndXBigger) {
-//					x--;
-//				}
-//			}
-//				if(isEndYBigger) {
-//					y++;
-//				}
-//				else if(!isEndYBigger) {
-//					y--;
-//				}
-//			
-//		}
-//		writableRaster.setPixels(0, 0, width, height, pixels);
-//		TiledImage ti = new TiledImage(loadedImage,1,1);
-//		ti.setData(writableRaster);
-//		TiledImage myTiledImage = ti;
-//		displayTiledImage(myTiledImage);
-		
-				int width = loadedImage.getWidth();
-				int height = loadedImage.getHeight();
-				SampleModel mySampleModel = loadedImage.getSampleModel();
-				int nbands = mySampleModel.getNumBands();
-				Raster readableRaster = loadedImage.getData();
-				WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
-				int[] pixels = new int[nbands*width*height];
-				readableRaster.getPixels(0, 0, width, height, pixels);
-				int pixelIndex = 0;
-				for(int y=lineBY;y<lineEY;y++) {
-					for(int x=lineBX;x<lineEX;x++)
-					{
-						if((slope*y == x)) {
-							pixelIndex = y*width*nbands+x*nbands;
-							for(int band=0;band<nbands;band++) {					
-								pixels[(pixelIndex-0)+(band)] = 255;
-								pixels[(pixelIndex-1)+(band)] = 255;
-								pixels[(pixelIndex-2)+(band)] = 255;
-								pixels[(pixelIndex-3)+(band)] = 255;
-								pixels[(pixelIndex-4)+(band)] = 255;
-								pixels[(pixelIndex-5)+(band)] = 255;
-								pixels[(pixelIndex-6)+(band)] = 255;
-								pixels[(pixelIndex-7)+(band)] = 255;
-								pixels[(pixelIndex-8)+(band)] = 255;
-								pixels[(pixelIndex-9)+(band)] = 255;
-							}
-						}
-					}
-				}
-				writableRaster.setPixels(0, 0, width, height, pixels);
-				TiledImage ti = new TiledImage(loadedImage,1,1);
-				ti.setData(writableRaster);
-				TiledImage myTiledImage = ti;
-				loadedImage = myTiledImage.createSnapshot();
-				displayJAIimage = new DisplayJAI(loadedImage);
-				imageHolder.add(displayJAIimage);
-				
-				this.getContentPane().repaint();
-				
-				this.setSize(this.getWidth()-1, this.getHeight()-1);
-				this.setSize(this.getWidth()+1, this.getHeight()+1);
-				imageHolder.repaint();
-				this.repaint();
-				repaint();
+	/**
+	 * Based from y = mx + b. Calculates the y-intercept from a given point.
+	 * @param x
+	 * @param y
+	 * @param slope
+	 * @return
+	 */
+	public double findYIntercept(double x, double y, double slope) {
+		double yIntercept = 0;
+		double slopeAndX = slope*x;
+		double b = y-slopeAndX;
+		yIntercept = b;
+		return yIntercept;
+	}
+	
+	public void drawLine(double lineBX, double lineBY, double lineEX, double lineEY, double slope) {
+		int width = loadedImage.getWidth();
+		int height = loadedImage.getHeight();
+		SampleModel mySampleModel = loadedImage.getSampleModel();
+		int nbands = mySampleModel.getNumBands();
+		Raster readableRaster = loadedImage.getData();
+		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
+		int[] pixels = new int[nbands * width * height];
+		readableRaster.getPixels(0, 0, width, height, pixels);
+		double yIntercept = findYIntercept(lineEX, lineEY, slope);
+		System.out.println("Y-Intercept of 1st: " + findYIntercept(lineBX, lineBY, slope) + "     Y-Intercept of 2nd: " + findYIntercept(lineEX, lineEY, slope));
+		int pixelIndex = 0;
+		for (int x = (int)lineBX; x < (int)lineEX; x++) {
+			double y = (slope * x) + yIntercept;
+			pixelIndex = (int)y * width * nbands + x * nbands;
+			if(x == lineBX || x == lineEX-1) {
+				System.out.println("Coordinates: (" + x + ", " + y + ")");
+			}
+			for (int band = 0; band < nbands; band++) {
+				pixels[(pixelIndex - 0) + (band)] = 255;
+				pixels[(pixelIndex - 1) + (band)] = 255;
+				pixels[(pixelIndex - 2) + (band)] = 255;
+				pixels[(pixelIndex - 3) + (band)] = 255;
+				pixels[(pixelIndex + 1) + (band)] = 255;
+				pixels[(pixelIndex + 2) + (band)] = 255;
+				pixels[(pixelIndex + 3) + (band)] = 255;
+			}
+		}
+		writableRaster.setPixels(0, 0, width, height, pixels);
+		TiledImage ti = new TiledImage(loadedImage, 1, 1);
+		ti.setData(writableRaster);
+		TiledImage myTiledImage = ti;
+		loadedImage = myTiledImage.createSnapshot();
+		displayJAIimage = new DisplayJAI(loadedImage);
+		imageHolder.add(displayJAIimage);
+
+		this.getContentPane().repaint();
+
+		this.setSize(this.getWidth() - 1, this.getHeight() - 1);
+		this.setSize(this.getWidth() + 1, this.getHeight() + 1);
+		imageHolder.repaint();
+		this.repaint();
+		repaint();
 
 	}
 
