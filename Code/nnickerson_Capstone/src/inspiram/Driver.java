@@ -260,21 +260,41 @@ public class Driver extends JApplet {
 		double yIntercept = findYIntercept(lineEX, lineEY, slope);
 		System.out.println("Y-Intercept of 1st: " + findYIntercept(lineBX, lineBY, slope) + "     Y-Intercept of 2nd: " + findYIntercept(lineEX, lineEY, slope));
 		int pixelIndex = 0;
-		for (int x = (int)lineBX; x < (int)lineEX; x++) {
+		
+		double x1 = lineBX;
+		double x2 = lineEX;
+		double y1 = lineBY;
+		double y2 = lineEY;
+		if(lineBX >= lineEX) {
+			x1 = lineEX;
+			x2 = lineBX;
+			y1 = lineEY;
+			y2 = lineBY;
+		}
+		
+		double repeatingXs = Math.abs(slope);
+		double yPlus = 0;
+		
+		
+		for (double x = x1; x <= x2; x+=.01) {
 			double y = (slope * x) + yIntercept;
-			pixelIndex = (int)y * width * nbands + x * nbands;
-			if(x == lineBX || x == lineEX-1) {
-				System.out.println("Coordinates: (" + x + ", " + y + ")");
-			}
-			for (int band = 0; band < nbands; band++) {
-				pixels[(pixelIndex - 0) + (band)] = 255;
-				pixels[(pixelIndex - 1) + (band)] = 255;
-				pixels[(pixelIndex - 2) + (band)] = 255;
-				pixels[(pixelIndex - 3) + (band)] = 255;
-				pixels[(pixelIndex + 1) + (band)] = 255;
-				pixels[(pixelIndex + 2) + (band)] = 255;
-				pixels[(pixelIndex + 3) + (band)] = 255;
-			}
+//			while(yPlus != (y1/Math.abs(slope))) {
+				pixelIndex = (int)y * width * nbands + (int)x * nbands;
+				if(x == lineBX || x == lineEX-1) {
+					System.out.println("Coordinates: (" + x + ", " + y + ")");
+				}
+				for (int band = 0; band < nbands; band++) {
+					pixels[(pixelIndex - 0) + (band)] = 255;
+					pixels[(pixelIndex - 1) + (band)] = 255;
+					pixels[(pixelIndex - 2) + (band)] = 255;
+					pixels[(pixelIndex - 3) + (band)] = 255;
+					pixels[(pixelIndex + 1) + (band)] = 255;
+					pixels[(pixelIndex + 2) + (band)] = 255;
+					pixels[(pixelIndex + 3) + (band)] = 255;
+				}
+//				yPlus++;
+//			}
+//			yPlus = 0;
 		}
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(loadedImage, 1, 1);
