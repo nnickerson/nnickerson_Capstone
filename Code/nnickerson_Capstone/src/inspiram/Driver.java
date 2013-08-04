@@ -33,6 +33,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
@@ -58,6 +59,7 @@ public class Driver extends JApplet {
 	JMenuItem linearBezierOption;
 	JMenuItem quadraticBezierOption;
 	JMenuItem highOrderBezierOption;
+	JMenuItem textOption;
 	JLabel welcomeJLabel;
 	List<Pixel> redPixels = new ArrayList<Pixel>();
 	JScrollPane scrollPane = new JScrollPane();
@@ -100,12 +102,162 @@ public class Driver extends JApplet {
 		addRedEyeMenu();
 		addCreateLineMenu();
 		addBezierCurveDemos();
+		addTextOption();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
 	}
 	
 	public void pasteImageFromClipboard() {
 		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	}
+	
+	public void addTextOption() {
+		textOption = new JMenuItem("Text");
+	    mainMenu.add(textOption);
+	    this.setJMenuBar(mainMenuBar);
+	    
+	    //Listeners//
+	    ActionListener bezierListener = new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				chooseTextLocation();				
+			}
+		};
+	    //End of listeners//
+		
+		textOption.addActionListener(bezierListener);
+	    
+	    this.getContentPane().repaint();
+	    
+	    this.repaint();
+	}
+	
+	public void createText(int textX, int textY, PlanarImage myTextImage) {
+		int width = myTextImage.getWidth();
+		int height = myTextImage.getHeight();
+		SampleModel mySampleModel = myTextImage.getSampleModel();
+		int nbands = mySampleModel.getNumBands();
+		Raster readableRaster = myTextImage.getData();
+		Raster actualRaster = loadedImage.getData();
+		WritableRaster writableRaster = actualRaster.createCompatibleWritableRaster();
+		int[] pixels = new int[nbands * width * height];
+		int[] actualPixels = new int[nbands * width * height];
+		readableRaster.getPixels(0, 0, width, height, pixels);
+		actualRaster.getPixels(0, 0, width, height, actualPixels);
+		
+		int xMax = myTextImage.getWidth();
+		int yMax = myTextImage.getHeight();
+		
+		for (int x = 0; x < xMax; x++) {
+			for (int y = 0; y < yMax; y++) {
+				int textImagePixelIndex = (int)y * width * nbands + (int)x * nbands;
+				int r = 0;
+				int g = 0;
+				int b = 0;
+				
+				for (int band = 0; band < nbands; band++) {
+					if(band == 0) {
+						r = pixels[(textImagePixelIndex) + (band)];
+					}
+					else if(band == 1) {
+						g = pixels[(textImagePixelIndex) + (band)];
+					}
+					else {
+						b = pixels[(textImagePixelIndex) + (band)];
+					}
+				}
+				
+				if(isPixelBlack(r, g, b)) {
+					int actualPixelIndex = ((int)y) * loadedImage.getWidth() * nbands + ((int)x) * nbands;
+					for (int band = 0; band < nbands; band++) {
+						actualPixels[actualPixelIndex + band] = 0;
+					}
+				}
+				else {
+					int actualPixelIndex = ((int)y) * loadedImage.getWidth() * nbands + ((int)x) * nbands;
+					for (int band = 0; band < nbands; band++) {
+						actualPixels[actualPixelIndex + band] = actualPixels[actualPixelIndex + band];
+					}
+				}
+			}
+				
+		}
+		writableRaster.setPixels(0, 0, width, height, actualPixels);
+		TiledImage ti = new TiledImage(loadedImage, 1, 1);
+		ti.setData(writableRaster);
+		TiledImage myTiledImage = ti;
+		loadedImage = null;
+		loadedImage = myTiledImage.createSnapshot();
+		displayJAIimage = null;
+		removeOldComponents();
+		displayJAIimage = new DisplayJAI(loadedImage);
+		imageHolder.add(displayJAIimage);
+		
+		writableRaster = null;
+		actualPixels = null;
+		readableRaster = null;
+		actualRaster = null;
+
+		this.getContentPane().repaint();
+		this.setSize(this.getWidth() - 1, this.getHeight() - 1);
+		this.setSize(this.getWidth() + 1, this.getHeight() + 1);
+		imageHolder.repaint();
+		this.repaint();
+		repaint();
+	}
+		
+	public boolean isPixelBlack(int r, int g, int b) {
+		boolean pixelIsBlack = false;
+		if(r == 0 && g == 0 && b == 0) {
+			pixelIsBlack = true;
+		}
+		return pixelIsBlack;
+	}
+	
+	public void chooseTextLocation() {
+		imageHolder.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		
+		imageHolder.addMouseListener(new MouseListener() {
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+					int textX = imageHolder.getMousePosition().x;
+					int textY = imageHolder.getMousePosition().y;
+					imageHolder.setCursor(Cursor.getDefaultCursor());
+					for(MouseListener ml : imageHolder.getMouseListeners()) {
+						imageHolder.removeMouseListener(ml);
+					}
+					String text = JOptionPane.showInputDialog("Please enter the text you want.");
+					Text texter = new Text();
+					PlanarImage myTextImage = texter.getPlanarImageFromImage(texter.putTextOnPlanarImage(loadedImage, textX, textY, "I'm a walrus!"));
+					createText(textX, textY, myTextImage);
+			}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+		});
 	}
 	
 	public void addBezierCurveDemos() {
@@ -145,15 +297,22 @@ public class Driver extends JApplet {
 		highOrderBezierOption.addActionListener(bezierListener);
 	    
 	    this.getContentPane().repaint();
-	    imageHolder.repaint();
+	    
 	    this.repaint();
 	}
 	
 	public void loadImage(String imageLocation) {
 		loadedImage = il.loadPlanarImageWithJAI(imageLocation);
+		displayJAIimage = null;
+		removeOldComponents();
 		displayJAIimage = new DisplayJAI(loadedImage);
 //		scrollPane = new JScrollPane(displayJAIimage);
 		imageHolder.add(displayJAIimage);
+		this.setSize(this.getWidth() - 1, this.getHeight() - 1);
+		this.setSize(this.getWidth() + 1, this.getHeight() + 1);
+		imageHolder.repaint();
+		this.repaint();
+		this.getContentPane().repaint();
 		welcomeJLabel.setVisible(false);
 	}
 	
@@ -173,7 +332,7 @@ public class Driver extends JApplet {
 	    //End of listeners//
 	    
 	    this.getContentPane().repaint();
-	    imageHolder.repaint();
+	    
 	    this.repaint();
 	}
 	
@@ -278,7 +437,6 @@ public class Driver extends JApplet {
 		
 		for (double x = x1; x <= x2; x+=.01) {
 			double y = (slope * x) + yIntercept;
-//			while(yPlus != (y1/Math.abs(slope))) {
 				pixelIndex = (int)y * width * nbands + (int)x * nbands;
 				if(x == lineBX || x == lineEX-1) {
 					System.out.println("Coordinates: (" + x + ", " + y + ")");
@@ -292,17 +450,19 @@ public class Driver extends JApplet {
 					pixels[(pixelIndex + 2) + (band)] = 255;
 					pixels[(pixelIndex + 3) + (band)] = 255;
 				}
-//				yPlus++;
-//			}
-//			yPlus = 0;
 		}
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(loadedImage, 1, 1);
 		ti.setData(writableRaster);
 		TiledImage myTiledImage = ti;
+		loadedImage = null;
 		loadedImage = myTiledImage.createSnapshot();
+		displayJAIimage = null;
+		removeOldComponents();
 		displayJAIimage = new DisplayJAI(loadedImage);
 		imageHolder.add(displayJAIimage);
+		writableRaster = null;
+		readableRaster = null;
 
 		this.getContentPane().repaint();
 
@@ -320,7 +480,10 @@ public class Driver extends JApplet {
 	 * @param myTiledImage
 	 */
 	public void displayTiledImage(TiledImage myTiledImage) {
+		loadedImage = null;
 		loadedImage = myTiledImage.createSnapshot();
+		displayJAIimage = null;
+		removeOldComponents();
 		displayJAIimage = new DisplayJAI(loadedImage);
 		imageHolder.add(displayJAIimage);
 		
@@ -356,7 +519,7 @@ public class Driver extends JApplet {
 	    //End of listeners//
 	    
 	    this.getContentPane().repaint();
-	    imageHolder.repaint();
+	    
 	    this.repaint();
 	}
 	
@@ -429,9 +592,14 @@ public class Driver extends JApplet {
 	    previousGraphics = redEyeCircle;
 	} 
 	
+	public void removeOldComponents() {
+		for(int i = 0; i < imageHolder.getComponentCount();i++) {
+			imageHolder.remove(i);
+		}
+	}
+	
 	public void paint2DGraphics(Graphics2D g2d) {
 		imageHolder.paintComponents(g2d);
-		imageHolder.repaint();
 	}
 	
 	public void grabEyeLocation() {
@@ -518,6 +686,7 @@ public class Driver extends JApplet {
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(loadedImage,1,1);
 		ti.setData(writableRaster);
+		loadedImage = null;
 		return ti;
 	}
 	
@@ -705,6 +874,7 @@ public class Driver extends JApplet {
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(loadedImage,1,1);
 		ti.setData(writableRaster);
+		loadedImage = null;
 		return ti;
 	}
 	
@@ -724,9 +894,6 @@ public class Driver extends JApplet {
 			}
 		});
 	    //End of listeners//
-	    
-	    this.getContentPane().repaint();
-	    this.repaint();
 	}
 	
 //	public void paint(Graphics g) {
