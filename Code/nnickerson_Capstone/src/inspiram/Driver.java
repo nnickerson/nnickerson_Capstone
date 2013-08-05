@@ -168,7 +168,7 @@ public class Driver extends JApplet {
 					}
 				}
 				
-				if(isPixelBlack(r, g, b)) {
+				if(!isPixelBlack(r, g, b)) {
 					int actualPixelIndex = ((int)y) * loadedImage.getWidth() * nbands + ((int)x) * nbands;
 					for (int band = 0; band < nbands; band++) {
 						actualPixels[actualPixelIndex + band] = 0;
@@ -230,7 +230,7 @@ public class Driver extends JApplet {
 					}
 					String text = JOptionPane.showInputDialog("Please enter the text you want.");
 					Text texter = new Text();
-					PlanarImage myTextImage = texter.getPlanarImageFromImage(texter.putTextOnPlanarImage(loadedImage, textX, textY, "I'm a walrus!"));
+					PlanarImage myTextImage = texter.getPlanarImageFromImage(texter.putTextOnPlanarImage(loadedImage, textX, textY, text));
 					createText(textX, textY, myTextImage);
 			}
 
