@@ -13,17 +13,21 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
 import javax.swing.JButton;
@@ -36,6 +40,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
+import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -59,6 +64,7 @@ public class Driver extends JApplet {
 	JMenuItem linearBezierOption;
 	JMenuItem quadraticBezierOption;
 	JMenuItem highOrderBezierOption;
+	JMenuItem pasteOption;
 	JMenuItem textOption;
 	JLabel welcomeJLabel;
 	List<Pixel> redPixels = new ArrayList<Pixel>();
@@ -83,6 +89,8 @@ public class Driver extends JApplet {
 	double lineEndingY = 0.0;
 	double lineWidth = 1.0;
 	JApplet thisApplet = this;
+	boolean vPressed = false;
+	boolean ctrlPressed = false;
 
 	public void init() {
 		setupApplet();
@@ -103,12 +111,96 @@ public class Driver extends JApplet {
 		addCreateLineMenu();
 		addBezierCurveDemos();
 		addTextOption();
+		addPasteOption();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
 	}
 	
 	public void pasteImageFromClipboard() {
-		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		Locker myLocker = new Locker();
+		Text noText = new Text();
+		Image copiedImage = myLocker.getImageFromClipboard();
+		
+		if(copiedImage != null) {
+			PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
+			
+			loadedImage = myLocker.combineImages(loadedImage, copiedPlanarImage, loadedImage != null);
+			
+			displayJAIimage = null;
+			removeOldComponents();
+			displayJAIimage = new DisplayJAI(loadedImage);
+			imageHolder.add(displayJAIimage);
+	
+			this.getContentPane().repaint();
+			this.setSize(this.getWidth() - 1, this.getHeight() - 1);
+			this.setSize(this.getWidth() + 1, this.getHeight() + 1);
+			imageHolder.repaint();
+			this.repaint();
+			repaint();
+		}
+		else {
+			System.out.println("The flavor on the clipboard was not an image!");
+		}
+	}
+	
+	public void addPasteOption() {
+		pasteOption = new JMenuItem("Paste");
+	    mainMenu.add(pasteOption);
+	    this.setJMenuBar(mainMenuBar);
+	    
+	    //Listeners//
+	    ActionListener pasteListener = new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pasteImageFromClipboard();				
+			}
+		};
+	    //End of listeners//
+		
+		pasteOption.addActionListener(pasteListener);
+		
+		thisApplet.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				System.out.println("KEY PRESSED!: " + e.getKeyCode());
+				
+				if(e.getKeyCode() == KeyEvent.VK_V) {
+					vPressed = true;
+					System.out.println("FOUND V KEY");
+				}
+				if(e.getKeyCode() == 17) {
+					ctrlPressed = true;
+					System.out.println("FOUND CONTROL KEY");
+				}
+				if(ctrlPressed && vPressed) {
+					pasteImageFromClipboard();
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if(e.getKeyChar() == KeyEvent.VK_V) {
+					vPressed = false;
+				}
+				if(e.getKeyCode() == KeyEvent.CTRL_DOWN_MASK) {
+					ctrlPressed = false;
+				}
+			}
+			
+		});
+		thisApplet.setFocusable(true);
+	    
+	    this.getContentPane().repaint();
+	    
+	    this.repaint();
 	}
 	
 	public void addTextOption() {
@@ -117,7 +209,7 @@ public class Driver extends JApplet {
 	    this.setJMenuBar(mainMenuBar);
 	    
 	    //Listeners//
-	    ActionListener bezierListener = new ActionListener() {
+	    ActionListener textListener = new ActionListener() {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -126,7 +218,7 @@ public class Driver extends JApplet {
 		};
 	    //End of listeners//
 		
-		textOption.addActionListener(bezierListener);
+		textOption.addActionListener(textListener);
 	    
 	    this.getContentPane().repaint();
 	    
@@ -579,7 +671,6 @@ public class Driver extends JApplet {
 	}
 	
 	public void eyeLineup() {
-		
 		redEyeDiameter = radiusSlider.getValue();
 //		System.out.println("Red Eye Radius: " + redEyeDiameter);
 //	    redEyeCircle.setStroke(new BasicStroke());
