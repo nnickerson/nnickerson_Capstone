@@ -58,7 +58,9 @@ public class Driver extends JApplet {
 	Container imageHolder = this.getContentPane();
 	PlanarImage loadedImage;
 	JMenuBar mainMenuBar;
-	JMenu mainMenu;
+	JMenu fileMenu;
+	JMenu editMenu;
+	JMenu toolsMenu;
 	JMenuItem loadImageOption;
 	JMenuItem createLineOption;
 	JMenuItem linearBezierOption;
@@ -66,6 +68,7 @@ public class Driver extends JApplet {
 	JMenuItem highOrderBezierOption;
 	JMenuItem pasteOption;
 	JMenuItem textOption;
+	JMenuItem saveOption;
 	JLabel welcomeJLabel;
 	List<Pixel> redPixels = new ArrayList<Pixel>();
 	JScrollPane scrollPane = new JScrollPane();
@@ -112,6 +115,7 @@ public class Driver extends JApplet {
 		addBezierCurveDemos();
 		addTextOption();
 		addPasteOption();
+		addSaveOption();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
 	}
@@ -143,9 +147,28 @@ public class Driver extends JApplet {
 		}
 	}
 	
+	public void addSaveOption() {
+		saveOption = new JMenuItem("Save Image");
+		fileMenu.add(saveOption);
+		this.setJMenuBar(mainMenuBar);
+		
+		//Listeners//
+	    ActionListener saveListener = new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageSaver imageSaver = new ImageSaver();
+				imageSaver.saveImageAsPNG(loadedImage, false, "");
+			}
+		};
+		
+		saveOption.addActionListener(saveListener);
+	    //End of listeners//
+	}
+	
 	public void addPasteOption() {
 		pasteOption = new JMenuItem("Paste");
-	    mainMenu.add(pasteOption);
+	    editMenu.add(pasteOption);
 	    this.setJMenuBar(mainMenuBar);
 	    
 	    //Listeners//
@@ -205,7 +228,7 @@ public class Driver extends JApplet {
 	
 	public void addTextOption() {
 		textOption = new JMenuItem("Text");
-	    mainMenu.add(textOption);
+	    toolsMenu.add(textOption);
 	    this.setJMenuBar(mainMenuBar);
 	    
 	    //Listeners//
@@ -359,9 +382,9 @@ public class Driver extends JApplet {
 		linearBezierOption.setName("linearbezier");
 		quadraticBezierOption.setName("quadraticBezier");
 		highOrderBezierOption.setName("highOrderBezier");
-	    mainMenu.add(linearBezierOption);
-	    mainMenu.add(quadraticBezierOption);
-	    mainMenu.add(highOrderBezierOption);
+	    toolsMenu.add(linearBezierOption);
+	    toolsMenu.add(quadraticBezierOption);
+	    toolsMenu.add(highOrderBezierOption);
 	    this.setJMenuBar(mainMenuBar);
 	    
 	    //Listeners//
@@ -410,7 +433,7 @@ public class Driver extends JApplet {
 	
 	public void addCreateLineMenu() {
 	    createLineOption = new JMenuItem("Create Line");
-	    mainMenu.add(createLineOption);
+	    toolsMenu.add(createLineOption);
 	    this.setJMenuBar(mainMenuBar);
 	    
 	    //Listeners//
@@ -590,10 +613,14 @@ public class Driver extends JApplet {
 	
 	public void addImageLoadMenu() {
 		mainMenuBar = new JMenuBar();
-	    mainMenu = new JMenu("File");
+	    fileMenu = new JMenu("File");
+	    editMenu = new JMenu("Edit");
+	    toolsMenu = new JMenu("Tools");
 	    loadImageOption = new JMenuItem("Load Image");
-	    mainMenu.add(loadImageOption);
-	    mainMenuBar.add(mainMenu);
+	    fileMenu.add(loadImageOption);
+	    mainMenuBar.add(fileMenu);
+	    mainMenuBar.add(editMenu);
+	    mainMenuBar.add(toolsMenu);
 	    this.setJMenuBar(mainMenuBar);
 	    
 	    //Listeners//
@@ -971,8 +998,8 @@ public class Driver extends JApplet {
 	
 	public void addRedEyeMenu() {
 		JMenuItem redEyeOption = new JMenuItem("Fix Red Eye");
-	    mainMenu.add(redEyeOption);
-	    mainMenuBar.add(mainMenu);
+	    toolsMenu.add(redEyeOption);
+	    mainMenuBar.add(toolsMenu);
 	    this.setJMenuBar(mainMenuBar);
 	    
 	    //Listeners//
