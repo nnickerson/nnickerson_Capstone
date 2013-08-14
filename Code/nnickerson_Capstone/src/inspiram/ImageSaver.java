@@ -47,6 +47,10 @@ public class ImageSaver {
 		}
 	}
 	
+	/**
+	 * Grabs user input from a JOptionPane.
+	 * @return
+	 */
 	public String getFileNameFromUser() {
 		String fileName = JOptionPane.showInputDialog("Please enter a name for the image without the extension.");
 		

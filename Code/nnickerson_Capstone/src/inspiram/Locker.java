@@ -5,6 +5,8 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
@@ -15,15 +17,60 @@ import java.io.IOException;
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
+import javax.swing.ImageIcon;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
-import com.sun.media.jai.widget.DisplayJAI;
-
-public class Locker {
+/**
+ * Creates a locker that holds multiple images. Meant for the purposes of grabbing
+ * images from the system clipboard and storing them within the program for later use.
+ * @author nnickerson
+ *
+ */
+public class Locker extends JMenu {
 	
 	Clipboard systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	Image[] storedImages = new Image[5];
+	JMenu image0 = new JMenu("Image 0");
+	JMenu image1 = new JMenu("Image 1");
+	JMenu image2 = new JMenu("Image 2");
+	JMenu image3 = new JMenu("Image 3");
+	JMenu image4 = new JMenu("Image 4");
+	JMenu[] lockerMenuItems = new JMenu[5];
+	Image currentImage;
 
 	public Locker() {
-		
+		setupLocker();
+	}
+	
+	/**
+	 * Sets up the locker for use.
+	 */
+	public void setupLocker() {
+		this.setText("Locker");
+		image0.setName("0");
+		image1.setName("1");
+		image2.setName("2");
+		image3.setName("3");
+		image4.setName("4");
+		lockerMenuItems[0] = image0;
+		lockerMenuItems[1] = image1;
+		lockerMenuItems[2] = image2;
+		lockerMenuItems[3] = image3;
+		lockerMenuItems[4] = image4;
+		this.add(lockerMenuItems[0]);
+		this.add(lockerMenuItems[1]);
+		this.add(lockerMenuItems[2]);
+		this.add(lockerMenuItems[3]);
+		this.add(lockerMenuItems[4]);
+		for(int i = 0; i < lockerMenuItems.length; i++) {
+			JMenuItem sItem = new JMenuItem("Store Image");
+			JMenuItem pItem = new JMenuItem("Paste Image");
+			sItem.setName("Store");
+			pItem.setName("Paste");
+			lockerMenuItems[i].add(sItem);
+			lockerMenuItems[i].add(pItem);
+		}
 	}
 
 	/**
@@ -33,7 +80,65 @@ public class Locker {
 		return Toolkit.getDefaultToolkit().getSystemClipboard();
 	}
 	
+	/**
+	 * Adds the image that is currently copied to the locker to the last location
+	 */
+	public void addCopiedImageToLocker() {
+		boolean hadNull = false;
+		for(int i = 0; i < storedImages.length; i++) {
+			if(storedImages[i] == null) {
+				storedImages[i] = getImageFromClipboard();
+				Image image = storedImages[i];
+				Image shrunkImage = image.getScaledInstance(75, 75, Image.SCALE_FAST);
+				ImageIcon icon = new ImageIcon(shrunkImage);
+				lockerMenuItems[i].setIcon(icon);
+				hadNull = true;
+				i = storedImages.length;
+			}
+		}
+		
+		if(!hadNull) {
+			storedImages[4] = getImageFromClipboard();
+		}
+	}
 	
+	/**
+	 * Adds the image that is currently copied to the locker in the specified location.
+	 * The location is zero based.
+	 * @param location
+	 */
+	public void addCopiedImageToLocker(int location) {
+		storedImages[location] = getImageFromClipboard();
+		Image image = getImageFromClipboard();
+		Image shrunkImage = image.getScaledInstance(75, 75, Image.SCALE_FAST);
+		ImageIcon icon = new ImageIcon(shrunkImage);
+		lockerMenuItems[location].setIcon(icon);
+	}
+	
+	/**
+	 * Deletes the image at the specified location from the locker
+	 * @param location
+	 */
+	public void deleteImageFromLocker(int location) {
+		storedImages[location] = null;
+		lockerMenuItems[location].setIcon(null);
+	}
+	
+	/**
+	 * Grabs the image at a specified location within the locker.
+	 * @param location
+	 * @return
+	 */
+	public Image getImageFromLocker(int location) {
+		Image imageFromLocker;
+		imageFromLocker = storedImages[location];
+		return imageFromLocker;
+	}
+	
+	/**
+	 * Grabs the image that was copied onto the system clipboard
+	 * @return
+	 */
 	public Image getImageFromClipboard() {
 		DataFlavor df = new DataFlavor();
 		Image imageFromClipBoard = null;

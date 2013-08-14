@@ -38,6 +38,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.KeyStroke;
@@ -51,7 +52,7 @@ import com.sun.media.jai.widget.DisplayJAI;
  * @author nnickerson
  *
  */
-public class Driver extends JApplet {
+public class Inspiram extends JApplet {
 	Image image;
 	DisplayJAI displayJAIimage;
 	ImageLoader il = new ImageLoader();
@@ -94,6 +95,7 @@ public class Driver extends JApplet {
 	JApplet thisApplet = this;
 	boolean vPressed = false;
 	boolean ctrlPressed = false;
+	Locker inspiramLocker = new Locker();
 
 	public void init() {
 		setupApplet();
@@ -116,6 +118,7 @@ public class Driver extends JApplet {
 		addTextOption();
 		addPasteOption();
 		addSaveOption();
+		addInspiramLocker();
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
 	}
@@ -414,6 +417,65 @@ public class Driver extends JApplet {
 	    this.getContentPane().repaint();
 	    
 	    this.repaint();
+	}
+	
+	public void addInspiramLocker() {
+		mainMenuBar.add(inspiramLocker);
+		ActionListener lockerListener = new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JMenuItem chosenMenuItem = (JMenuItem) e.getSource();
+				String chosenItemName = chosenMenuItem.getName();
+				if(chosenItemName.equalsIgnoreCase("Store")) {
+					System.out.println("Storing image in locker!");
+					JPopupMenu popupMenu = (JPopupMenu)chosenMenuItem.getParent();
+					JMenu parentMenu = (JMenu)popupMenu.getInvoker();
+					int chosenImageNumber = Integer.parseInt(parentMenu.getName());
+					inspiramLocker.addCopiedImageToLocker(chosenImageNumber);
+				}
+				else {
+					System.out.println("Pasting image from locker!");
+					JPopupMenu popupMenu = (JPopupMenu)chosenMenuItem.getParent();
+					JMenu parentMenu = (JMenu)popupMenu.getInvoker();
+					int chosenImageNumber = Integer.parseInt(parentMenu.getName());
+					Text noText = new Text();
+					Image copiedImage = inspiramLocker.getImageFromLocker(chosenImageNumber);
+					System.out.println("Pasting image from Locker!");
+					if(copiedImage != null) {
+						PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
+						
+						loadedImage = inspiramLocker.combineImages(loadedImage, copiedPlanarImage, loadedImage != null);
+						
+						displayJAIimage = null;
+						removeOldComponents();
+						displayJAIimage = new DisplayJAI(loadedImage);
+						imageHolder.add(displayJAIimage);
+	
+	
+						thisApplet.getContentPane().repaint();
+						thisApplet.setSize(thisApplet.getWidth() - 1, thisApplet.getHeight() - 1);
+						thisApplet.setSize(thisApplet.getWidth() + 1, thisApplet.getHeight() + 1);
+						imageHolder.repaint();
+						thisApplet.repaint();
+						repaint();
+					}
+					else {
+						System.out.println("The flavor on the clipboard was not an image!");
+					}
+				}
+			}
+		};
+		
+		System.out.println("Images held in locker: " + inspiramLocker.getItemCount());
+		
+		for(int i = 0; i < inspiramLocker.getItemCount(); i++) {
+			JMenu pickedMenuItem = (JMenu)inspiramLocker.getItem(i);
+			JMenuItem pasteStoredImageOption = (JMenuItem)pickedMenuItem.getItem(0);
+			JMenuItem storeImageOption = (JMenuItem)pickedMenuItem.getItem(1);
+			pasteStoredImageOption.addActionListener(lockerListener);
+			storeImageOption.addActionListener(lockerListener);
+		}
 	}
 	
 	public void loadImage(String imageLocation) {
