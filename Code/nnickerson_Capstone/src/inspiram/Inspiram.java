@@ -10,7 +10,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -21,13 +20,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
-import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JApplet;
 import javax.swing.JButton;
@@ -41,7 +38,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -96,6 +92,7 @@ public class Inspiram extends JApplet {
 	boolean vPressed = false;
 	boolean ctrlPressed = false;
 	Locker inspiramLocker = new Locker();
+	History inspiramHistory = new History();
 
 	public void init() {
 		setupApplet();
@@ -119,6 +116,7 @@ public class Inspiram extends JApplet {
 		addPasteOption();
 		addSaveOption();
 		addInspiramLocker();
+		mainMenuBar.add(inspiramHistory);
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
 	}
@@ -267,12 +265,17 @@ public class Inspiram extends JApplet {
 		int xMax = myTextImage.getWidth();
 		int yMax = myTextImage.getHeight();
 		
+		Change change = new Change("Text Creation");
+		change.undoChange.addActionListener(createChangeUndoListener());
+		
 		for (int x = 0; x < xMax; x++) {
 			for (int y = 0; y < yMax; y++) {
 				int textImagePixelIndex = (int)y * width * nbands + (int)x * nbands;
 				int r = 0;
 				int g = 0;
 				int b = 0;
+				
+				PixelHistory pixelHistory = new PixelHistory(x, y);
 				
 				for (int band = 0; band < nbands; band++) {
 					if(band == 0) {
@@ -288,6 +291,13 @@ public class Inspiram extends JApplet {
 				
 				if(!isPixelBlack(r, g, b)) {
 					int actualPixelIndex = ((int)y) * loadedImage.getWidth() * nbands + ((int)x) * nbands;
+					pixelHistory.setPrevR(pixels[textImagePixelIndex + pixelHistory.R_BAND]);
+					pixelHistory.setPrevG(pixels[textImagePixelIndex + pixelHistory.G_BAND]);
+					pixelHistory.setPrevB(pixels[textImagePixelIndex + pixelHistory.B_BAND]);
+					pixelHistory.setNewR(0);
+					pixelHistory.setNewG(0);
+					pixelHistory.setNewB(0);
+					change.getAllPixelHistory().add(pixelHistory);
 					for (int band = 0; band < nbands; band++) {
 						actualPixels[actualPixelIndex + band] = 0;
 					}
@@ -301,6 +311,7 @@ public class Inspiram extends JApplet {
 			}
 				
 		}
+		inspiramHistory.addChange(change);
 		writableRaster.setPixels(0, 0, width, height, actualPixels);
 		TiledImage ti = new TiledImage(loadedImage, 1, 1);
 		ti.setData(writableRaster);
@@ -324,6 +335,7 @@ public class Inspiram extends JApplet {
 		this.repaint();
 		repaint();
 	}
+	
 		
 	public boolean isPixelBlack(int r, int g, int b) {
 		boolean pixelIsBlack = false;
@@ -417,6 +429,37 @@ public class Inspiram extends JApplet {
 	    this.getContentPane().repaint();
 	    
 	    this.repaint();
+	}
+	
+	public ActionListener createChangeUndoListener() {
+		ActionListener changeUndoListener = new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JMenuItem chosenMenuItem = (JMenuItem) e.getSource();
+				
+					System.out.println("Undoing image from history!");
+					JPopupMenu popupMenu = (JPopupMenu)chosenMenuItem.getParent();
+					Change parentMenu = (Change)popupMenu.getInvoker();
+					System.out.println("Undoing image from history!");
+						
+						loadedImage = parentMenu.revertChange(loadedImage);
+						
+						displayJAIimage = null;
+						removeOldComponents();
+						displayJAIimage = new DisplayJAI(loadedImage);
+						imageHolder.add(displayJAIimage);
+	
+	
+						thisApplet.getContentPane().repaint();
+						thisApplet.setSize(thisApplet.getWidth() - 1, thisApplet.getHeight() - 1);
+						thisApplet.setSize(thisApplet.getWidth() + 1, thisApplet.getHeight() + 1);
+						imageHolder.repaint();
+						thisApplet.repaint();
+						repaint();
+			}
+		};
+		return changeUndoListener;
 	}
 	
 	public void addInspiramLocker() {

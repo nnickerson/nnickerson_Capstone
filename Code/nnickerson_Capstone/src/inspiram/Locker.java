@@ -69,6 +69,7 @@ public class Locker extends JMenu {
 			sItem.setName("Store");
 			pItem.setName("Paste");
 			lockerMenuItems[i].add(sItem);
+			pItem.setVisible(false);
 			lockerMenuItems[i].add(pItem);
 		}
 	}
@@ -92,6 +93,7 @@ public class Locker extends JMenu {
 				Image shrunkImage = image.getScaledInstance(75, 75, Image.SCALE_FAST);
 				ImageIcon icon = new ImageIcon(shrunkImage);
 				lockerMenuItems[i].setIcon(icon);
+				
 				hadNull = true;
 				i = storedImages.length;
 			}
@@ -110,9 +112,12 @@ public class Locker extends JMenu {
 	public void addCopiedImageToLocker(int location) {
 		storedImages[location] = getImageFromClipboard();
 		Image image = getImageFromClipboard();
-		Image shrunkImage = image.getScaledInstance(75, 75, Image.SCALE_FAST);
-		ImageIcon icon = new ImageIcon(shrunkImage);
-		lockerMenuItems[location].setIcon(icon);
+		if(image != null) {
+			Image shrunkImage = image.getScaledInstance(75, 75, Image.SCALE_FAST);
+			ImageIcon icon = new ImageIcon(shrunkImage);
+			lockerMenuItems[location].setIcon(icon);
+			lockerMenuItems[location].getItem(1).setVisible(true); //Unhides the paste option
+		}
 	}
 	
 	/**
@@ -122,6 +127,7 @@ public class Locker extends JMenu {
 	public void deleteImageFromLocker(int location) {
 		storedImages[location] = null;
 		lockerMenuItems[location].setIcon(null);
+		lockerMenuItems[location].getItem(1).setVisible(false); //Unhides the paste option
 	}
 	
 	/**
