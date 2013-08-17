@@ -119,6 +119,7 @@ public class Inspiram extends JApplet {
 		mainMenuBar.add(inspiramHistory);
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
+	    imageHolder.setBackground(Color.gray);
 	}
 	
 	public void pasteImageFromClipboard() {
@@ -134,7 +135,9 @@ public class Inspiram extends JApplet {
 			displayJAIimage = null;
 			removeOldComponents();
 			displayJAIimage = new DisplayJAI(loadedImage);
+			displayJAIimage.setOpaque(false);
 			imageHolder.add(displayJAIimage);
+			imageHolder.setVisible(false);
 	
 			this.getContentPane().repaint();
 			this.setSize(this.getWidth() - 1, this.getHeight() - 1);
