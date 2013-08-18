@@ -104,6 +104,7 @@ public class DemoApplet extends JApplet {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JButton layerButton = (JButton)e.getSource();
+				moveLayerUp(Integer.parseInt(layerButton.getName().split(" ")[1]));
 				System.out.println(layerButton.getName());
 			}
 		};
@@ -171,6 +172,26 @@ public class DemoApplet extends JApplet {
 		layersHolder.repaint();
 		container.repaint();
 		this.repaint();
+	}
+	
+	public void moveLayerUp(int movingLayersID) {
+		int layerPositionMoving = 0;
+		int layerPositionAbove = 0;
+		Layer tempLayer;
+		for(int i = 0; i < layers.length; i++) {
+			if(layers[i].getLayerID() == movingLayersID) {
+				if(i != 0) {
+					layerPositionMoving = i;
+					layerPositionAbove = i-1;
+					i = layers.length;
+				}
+			}
+		}
+		tempLayer = layers[layerPositionMoving];
+		layers[layerPositionMoving] = layers[layerPositionAbove];
+		layers[layerPositionAbove] = tempLayer;
+		displayLayersOnPanel();
+		displayAllLayers();
 	}
 	
 	public void deleteLayer() {
