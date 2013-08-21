@@ -2,6 +2,7 @@ package inspiram;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -20,23 +21,21 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
-import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JApplet;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.sun.media.jai.widget.DisplayJAI;
 
@@ -88,6 +87,15 @@ public class Inspiram extends JApplet {
 	RedEye redEye = new RedEye();
 	ImageSaver imageSaver = new ImageSaver();
 	Line line = new Line();
+	Layer[] layers = new Layer[0];
+	JMenu layersMenu;
+	JMenuItem addLayerOption;
+	JMenuItem deleteLayerOption;
+	Container container = this.getContentPane();
+	JPanel layersHolder = new JPanel();
+	JPanel layersPanel;
+	int currentLayer = 0;
+	
 
 	public void init() {
 		setupApplet();
@@ -103,7 +111,11 @@ public class Inspiram extends JApplet {
 		rWidth = (int)resWidth;
 		rHeight = (int)resHeight;
 		setSize(rWidth-150, rHeight-150);
-		il.addImageLoadMenu(this);
+		addImageLoadMenu();
+		imageHolder.setBackground(Color.gray);
+		addLayersMenu();
+		addLayersPanel();
+		addLayersHolder();
 		redEye.addRedEyeMenu(inspiramClass);
 		line.addCreateLineMenu(inspiramClass);
 		addBezierCurveDemos();
@@ -114,7 +126,36 @@ public class Inspiram extends JApplet {
 		mainMenuBar.add(inspiramHistory);
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
-	    imageHolder.setBackground(Color.gray);
+	}
+	
+	public void addImageLoadMenu() {
+		mainMenuBar = new JMenuBar();
+	    fileMenu = new JMenu("File");
+	    editMenu = new JMenu("Edit");
+	    toolsMenu = new JMenu("Tools");
+	    loadImageOption = new JMenuItem("Load Image");
+	    fileMenu.add(loadImageOption);
+	    mainMenuBar.add(fileMenu);
+	    mainMenuBar.add(editMenu);
+	    mainMenuBar.add(toolsMenu);
+	    setJMenuBar(mainMenuBar);
+	    
+	    //Listeners//
+	    loadImageOption.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.showOpenDialog(null);
+				String imageLocation = fileChooser.getSelectedFile().getAbsolutePath();
+				System.out.println(imageLocation);
+				il.loadImage(inspiramClass, imageLocation);
+			}
+		});
+	    //End of listeners//
+	    
+	    getContentPane().repaint();	    
+	    repaint();
 	}
 	
 	public void addTextOption() {
@@ -133,9 +174,7 @@ public class Inspiram extends JApplet {
 	    //End of listeners//
 		
 		textOption.addActionListener(textListener);
-	    
 	    this.getContentPane().repaint();
-	    
 	    this.repaint();
 	}
 	
@@ -145,7 +184,7 @@ public class Inspiram extends JApplet {
 		SampleModel mySampleModel = myTextImage.getSampleModel();
 		int nbands = mySampleModel.getNumBands();
 		Raster readableRaster = myTextImage.getData();
-		Raster actualRaster = loadedImage.getData();
+		Raster actualRaster = layers[currentLayer].getLayerImage().getData();
 		WritableRaster writableRaster = actualRaster.createCompatibleWritableRaster();
 		int[] pixels = new int[nbands * width * height];
 		int[] actualPixels = new int[nbands * width * height];
@@ -180,7 +219,7 @@ public class Inspiram extends JApplet {
 				}
 				
 				if(!isPixelBlack(r, g, b)) {
-					int actualPixelIndex = ((int)y) * loadedImage.getWidth() * nbands + ((int)x) * nbands;
+					int actualPixelIndex = ((int)y) * layers[currentLayer].getLayerImage().getWidth() * nbands + ((int)x) * nbands;
 					pixelHistory.setPrevR(pixels[textImagePixelIndex + pixelHistory.R_BAND]);
 					pixelHistory.setPrevG(pixels[textImagePixelIndex + pixelHistory.G_BAND]);
 					pixelHistory.setPrevB(pixels[textImagePixelIndex + pixelHistory.B_BAND]);
@@ -193,7 +232,7 @@ public class Inspiram extends JApplet {
 					}
 				}
 				else {
-					int actualPixelIndex = ((int)y) * loadedImage.getWidth() * nbands + ((int)x) * nbands;
+					int actualPixelIndex = ((int)y) * layers[currentLayer].getLayerImage().getWidth() * nbands + ((int)x) * nbands;
 					for (int band = 0; band < nbands; band++) {
 						actualPixels[actualPixelIndex + band] = actualPixels[actualPixelIndex + band];
 					}
@@ -203,7 +242,7 @@ public class Inspiram extends JApplet {
 		}
 		inspiramHistory.addChange(change);
 		writableRaster.setPixels(0, 0, width, height, actualPixels);
-		TiledImage ti = new TiledImage(loadedImage, 1, 1);
+		TiledImage ti = new TiledImage(layers[currentLayer].getLayerImage(), 1, 1);
 		ti.setData(writableRaster);
 		return ti;
 	}
@@ -218,21 +257,21 @@ public class Inspiram extends JApplet {
 	}
 	
 	public void chooseTextLocation() {
-		imageHolder.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		layers[currentLayer].setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		
-		imageHolder.addMouseListener(new MouseListener() {
+		layers[currentLayer].addMouseListener(new MouseListener() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-					int textX = imageHolder.getMousePosition().x;
-					int textY = imageHolder.getMousePosition().y;
-					imageHolder.setCursor(Cursor.getDefaultCursor());
-					for(MouseListener ml : imageHolder.getMouseListeners()) {
-						imageHolder.removeMouseListener(ml);
+					int textX = layers[currentLayer].getMousePosition().x;
+					int textY = layers[currentLayer].getMousePosition().y;
+					layers[currentLayer].setCursor(Cursor.getDefaultCursor());
+					for(MouseListener ml : layers[currentLayer].getMouseListeners()) {
+						layers[currentLayer].removeMouseListener(ml);
 					}
 					String text = JOptionPane.showInputDialog("Please enter the text you want.");
 					Text texter = new Text();
-					PlanarImage myTextImage = texter.getPlanarImageFromImage(texter.putTextOnPlanarImage(loadedImage, textX, textY, text));
+					PlanarImage myTextImage = texter.getPlanarImageFromImage(texter.putTextOnPlanarImage(layers[currentLayer].getLayerImage(), textX, textY, text));
 					displayTiledImage(createText(textX, textY, myTextImage));
 			}
 
@@ -297,13 +336,9 @@ public class Inspiram extends JApplet {
 	 * @param myTiledImage
 	 */
 	public void displayTiledImage(TiledImage myTiledImage) {
-		loadedImage = null;
-		loadedImage = myTiledImage.createSnapshot();
-		displayJAIimage = null;
-		removeOldComponents();
-		displayJAIimage = new DisplayJAI(loadedImage);
-		imageHolder.add(displayJAIimage);
-		
+		layers[currentLayer].setLayerImage(myTiledImage.createSnapshot());
+//		removeOldComponents();
+		layers[currentLayer].set(layers[currentLayer].getLayerImage());
 		this.getContentPane().repaint();
 		
 		this.setSize(this.getWidth()-1, this.getHeight()-1);
@@ -369,8 +404,212 @@ public class Inspiram extends JApplet {
 		}
 	}
 	
+	public void paintSelectedLayer() {
+		layersPanel.getComponent(currentLayer).setBackground(Color.WHITE);
+	}
+	
 	public void paint2DGraphics(Graphics2D g2d) {
 		imageHolder.paintComponents(g2d);
+	}
+	
+	public void addLayersMenu() {
+		layersMenu = new JMenu("Layers");
+		addLayerOption = new JMenuItem("Add Layer");
+		deleteLayerOption = new JMenuItem("Delete Layer");
+		addLayerOption.setName("addLayer");
+		deleteLayerOption.setName("deleteLayer");
+		ActionListener layersOptionListener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JMenuItem menuItem = (JMenuItem)e.getSource();
+				if(menuItem.getName().equalsIgnoreCase("addLayer")) {
+					addLayer();
+				}
+				else {
+					deleteLayer();
+				}
+ 			}
+		};
+		addLayerOption.addActionListener(layersOptionListener);
+		deleteLayerOption.addActionListener(layersOptionListener);
+		layersMenu.add(addLayerOption);
+		layersMenu.add(deleteLayerOption);
+		mainMenuBar.add(layersMenu);
+	}
+	
+	public void addLayersHolder() {
+		layersHolder.setBackground(Color.GRAY);
+//		container.add(layersHolder, BorderLayout.WEST);
+	}
+	
+	public void addLayersPanel() {
+		layersPanel = new JPanel();
+		layersPanel.setSize(rWidth,rHeight);
+		layersPanel.setVisible(true);
+		layersPanel.setBackground(Color.black);
+		this.setLayout(new BorderLayout());
+		layersPanel.setLayout(new BoxLayout(layersPanel, BoxLayout.Y_AXIS));
+		this.add(layersPanel, BorderLayout.EAST);
+//		this.add(layersHolder);
+		layersPanel.repaint();
+		layersPanel.updateUI();
+		layersHolder.repaint();
+		container.repaint();
+		this.repaint();		
+	}
+	
+	public void displayLayersOnPanel() {
+		layersPanel.removeAll();
+		//Setting up button//
+		ActionListener layerButtonsListener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JButton layerUpButton = (JButton)e.getSource();
+				JPanel layerPanel = (JPanel)layerUpButton.getParent();
+				moveLayerUp(Integer.parseInt(layerUpButton.getName().split(" ")[1]));
+				System.out.println(layerUpButton.getName());
+			}
+		};
+		//Ending button setup//
+		
+		for(Layer layer : layers) {
+			JPanel newLayerPanel = new JPanel();
+			JButton upButton = new JButton();
+			JButton downButton = new JButton();
+			upButton.setText("Move " + layer.getLayerName() + " up");
+			downButton.setText("Move " + layer.getLayerName() + " down");
+			upButton.setName(layer.getLayerName() + " up");
+			downButton.setName(layer.getLayerName() + " down");
+			upButton.addActionListener(layerButtonsListener);
+			downButton.addActionListener(layerButtonsListener);
+			newLayerPanel.setLayout(new BorderLayout());
+			System.out.println(layer.getLayerName());
+			newLayerPanel.setName(layer.getLayerName());
+			JLabel layerLabel = new JLabel(layer.getLayerName());
+			layerLabel.setName(layer.getLayerName());
+			layerLabel.setText(layer.getLayerName());
+			newLayerPanel.add(layerLabel, BorderLayout.EAST);
+			newLayerPanel.add(upButton, BorderLayout.NORTH);
+			newLayerPanel.add(downButton, BorderLayout.SOUTH);
+			newLayerPanel.setBackground(Color.LIGHT_GRAY);
+			newLayerPanel.addMouseListener(new MouseListener() {
+
+				@Override
+				public void mouseClicked(MouseEvent e) {}
+
+				@Override
+				public void mousePressed(MouseEvent e) {
+					JPanel layerPanel = (JPanel)e.getSource();
+					currentLayer = (Integer.parseInt(layerPanel.getName().split(" ")[1]));
+					System.out.println("Current Layer: " + currentLayer);
+					for(Component c : layersPanel.getComponents()) {
+						c.setBackground(Color.LIGHT_GRAY);
+					}
+					layerPanel.setBackground(Color.WHITE);
+				}
+
+				@Override
+				public void mouseReleased(MouseEvent e) {}
+
+				@Override
+				public void mouseEntered(MouseEvent e) {}
+
+				@Override
+				public void mouseExited(MouseEvent e) {}
+			});
+			layersPanel.add(newLayerPanel);
+		}
+		System.out.println("PANELS INSTEAD OF BUTTON");
+		layersPanel.repaint();
+		layersPanel.updateUI();
+		container.repaint();
+		this.repaint();
+	}
+	
+	public void addLayer() {
+		Layer[] tempLayers = new Layer[layers.length];
+		for(int i = 0; i < layers.length; i++) {
+			System.out.println(layers[i].getLayerName() + " LAYER");
+			tempLayers[i] = layers[i];
+		}
+		layers = new Layer[tempLayers.length+1];
+		for(int i = 0; i < tempLayers.length; i++) {
+			layers[i] = tempLayers[i];
+		}
+		System.out.println("Added a new layer");
+		Layer newLayer = new Layer("Layer " + (layers.length-1), layers.length-1);
+		newLayer.setVisible(true);
+		currentLayer = layers.length-1;
+		layers[layers.length-1] = newLayer;
+		layers[0].setBackground(Color.green);
+		try {
+			layers[0].removeAll();
+			layers[0].setOpaque(false);
+//			layers[0].add(new JLabel(new ImageIcon(ImageIO.read(new File("images.jpg")))));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		if(layers.length > 1) {
+			layers[1].removeAll();
+			layers[1].setBackground(Color.red);
+			layers[1].setOpaque(false);
+			try {
+//				layers[1].add(new JLabel(new ImageIcon(ImageIO.read(new File("Untitled.jpg")))));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		displayAllLayers();
+		displayLayersOnPanel();
+		layersPanel.getComponent(layersPanel.getComponentCount()-1).setBackground(Color.WHITE);
+	}
+	
+	public void displayAllLayers() {
+		layersHolder.removeAll();
+		for(Layer layer : layers) {
+			System.out.println("Adding layer back to holder!");
+			layer.setOpaque(false);
+			this.add(layer);
+			welcomeJLabel.setVisible(false);
+		}
+		container.add(layersHolder); //Limits the area for each layer
+		layersHolder.repaint();
+		layersHolder.updateUI();
+		imageHolder.repaint();
+		container.repaint();
+		this.repaint();
+	}
+	
+	public PlanarImage tiledImageToPlanarImage(TiledImage tiledImage) {
+		return tiledImage.createSnapshot();
+	}
+	
+	public void moveLayerUp(int movingLayersID) {
+		int layerPositionMoving = 0;
+		int layerPositionAbove = 0;
+		Layer tempLayer;
+		for(int i = 0; i < layers.length; i++) {
+			if(layers[i].getLayerID() == movingLayersID) {
+				if(i != 0) {
+					layerPositionMoving = i;
+					layerPositionAbove = i-1;
+					currentLayer = i;
+					i = layers.length;
+					
+				}
+			}
+		}
+		tempLayer = layers[layerPositionMoving];
+		layers[layerPositionMoving] = layers[layerPositionAbove];
+		layers[layerPositionAbove] = tempLayer;
+		displayLayersOnPanel();
+		displayAllLayers();
+		paintSelectedLayer();
+	}
+	
+	public void deleteLayer() {
+		
 	}
 	
 //	public void paint(Graphics g) {

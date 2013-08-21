@@ -3,7 +3,6 @@ package inspiram;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -12,6 +11,7 @@ import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 
+import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -27,12 +27,12 @@ public class RedEye {
 		
 	}
 	
-	public TiledImage fixRedEyePixels(Inspiram inspiram) {
-		int width = inspiram.loadedImage.getWidth();
-		int height = inspiram.loadedImage.getHeight();
-		SampleModel mySampleModel = inspiram.loadedImage.getSampleModel();
+	public TiledImage fixRedEyePixels(Inspiram inspiram, PlanarImage imageToFix) {
+		int width = imageToFix.getWidth();
+		int height = imageToFix.getHeight();
+		SampleModel mySampleModel = imageToFix.getSampleModel();
 		int nbands = mySampleModel.getNumBands();
-		Raster readableRaster = inspiram.loadedImage.getData();
+		Raster readableRaster = imageToFix.getData();
 		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
 		int[] pixels = new int[nbands*width*height];
 		readableRaster.getPixels(0, 0, width, height, pixels);
@@ -69,7 +69,7 @@ public class RedEye {
 			}
 		}
 		writableRaster.setPixels(0, 0, width, height, pixels);
-		TiledImage ti = new TiledImage(inspiram.loadedImage,1,1);
+		TiledImage ti = new TiledImage(imageToFix,1,1);
 		ti.setData(writableRaster);
 		return ti;
 	}
@@ -128,23 +128,23 @@ public class RedEye {
 	}
 	
 	public void grabEyeLocation(final Inspiram inspiram) {
-		inspiram.imageHolder.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		inspiram.layers[inspiram.currentLayer].setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		
-		inspiram.imageHolder.addMouseListener(new MouseListener() {
+		MouseListener redEyeListener = new MouseListener() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {}
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				inspiram.redEyeCenterX = inspiram.imageHolder.getMousePosition().x;
-				inspiram.redEyeCenterY = inspiram.imageHolder.getMousePosition().y;
-//				System.out.println("Eye center: " + redEyeCenterX + ", " + redEyeCenterY);
-				inspiram.imageHolder.setCursor(Cursor.getDefaultCursor());
-				for(MouseListener ml : inspiram.imageHolder.getMouseListeners()) {
-					inspiram.imageHolder.removeMouseListener(ml);
+				inspiram.redEyeCenterX = inspiram.layers[inspiram.currentLayer].getMousePosition().x;
+				inspiram.redEyeCenterY = inspiram.layers[inspiram.currentLayer].getMousePosition().y;
+				System.out.println("Eye center: " + inspiram.redEyeCenterX + ", " + inspiram.redEyeCenterY);
+				inspiram.layers[inspiram.currentLayer].setCursor(Cursor.getDefaultCursor());
+				for(MouseListener ml : inspiram.layers[inspiram.currentLayer].getMouseListeners()) {
+					inspiram.layers[inspiram.currentLayer].removeMouseListener(ml);
 				}
-				defineEyeSize(inspiram.redEyeCenterX, inspiram.redEyeCenterY, inspiram);
+				defineEyeSize(inspiram.redEyeCenterX, inspiram.redEyeCenterY, inspiram, inspiram.layers[inspiram.currentLayer].getLayerImage());
 			}
 
 			@Override
@@ -155,11 +155,12 @@ public class RedEye {
 
 			@Override
 			public void mouseExited(MouseEvent e) {}  
-			});
+			};
+			inspiram.layers[inspiram.currentLayer].addMouseListener(redEyeListener);
 		System.out.println("created the mouse listener for red eye.");
 	}
 	
-	public void defineEyeSize(int centerEyeX, int centerEyeY, final Inspiram inspiram) {
+	public void defineEyeSize(int centerEyeX, int centerEyeY, final Inspiram inspiram, PlanarImage imageToFix) {
 		inspiram.sliderFrame = new JFrame("Slide the slider to fit over the iris in a red eye.");
 		inspiram.sliderFrame.setLayout(new BorderLayout());
 		inspiram.radiusSlider = new JSlider(JSlider.HORIZONTAL);
@@ -171,11 +172,11 @@ public class RedEye {
 		inspiram.sliderFrame.add(inspiram.radiusSlider, BorderLayout.PAGE_START);
 		inspiram.radiusSlider.setMinimum(2);
 		inspiram.radiusSlider.setMaximum((int)((double)(inspiram.rHeight)*.9));
-		if(inspiram.loadedImage.getWidth() >= inspiram.loadedImage.getHeight()) {
-			inspiram.radiusSlider.setMaximum(inspiram.loadedImage.getHeight()-1);
+		if(imageToFix.getWidth() >= imageToFix.getHeight()) {
+			inspiram.radiusSlider.setMaximum(imageToFix.getHeight()-1);
 		}
 		else {
-			inspiram.radiusSlider.setMaximum(inspiram.loadedImage.getWidth()-1);
+			inspiram.radiusSlider.setMaximum(imageToFix.getWidth()-1);
 		}
 		inspiram.sliderFrame.setSize(400, 110);
 		inspiram.sliderFrame.setVisible(true);
@@ -188,7 +189,7 @@ public class RedEye {
 		inspiram.radiusSlider.setPaintTrack(true);
 		inspiram.radiusSlider.setVisible(true);
 		inspiram.radiusSlider.repaint();
-		inspiram.redEyeCircle = inspiram.displayJAIimage.getGraphics();
+		inspiram.redEyeCircle = inspiram.layers[inspiram.currentLayer].getGraphics();
 		
 		eyeLineup(inspiram);
 		
@@ -197,7 +198,7 @@ public class RedEye {
 
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				inspiram.displayJAIimage.paint(inspiram.previousGraphics);
+				inspiram.layers[inspiram.currentLayer].paint(inspiram.previousGraphics);
 				eyeLineup(inspiram);
 			}
 		});
@@ -205,8 +206,8 @@ public class RedEye {
 		fixRedEyeButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				for(MouseListener ml : inspiram.imageHolder.getMouseListeners()) {
-					inspiram.imageHolder.removeMouseListener(ml);
+				for(MouseListener ml : inspiram.layersHolder.getMouseListeners()) {
+					inspiram.layersHolder.removeMouseListener(ml);
 				}
 				fixRedEye(inspiram);
 			} 
@@ -251,8 +252,9 @@ public class RedEye {
 	 */
 	public void fixRedEye(Inspiram inspiram) {
 		inspiram.sliderFrame.dispose();
-		TiledImage myTiledImage = fixRedEyePixels(inspiram);
-		inspiram.displayTiledImage(myTiledImage);
+		TiledImage myTiledImage = fixRedEyePixels(inspiram, inspiram.layers[inspiram.currentLayer].getLayerImage());
+		inspiram.layers[inspiram.currentLayer].setLayerImage(inspiram.tiledImageToPlanarImage(myTiledImage));
+		inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
 	}
 	
 	public float[] getHSB(int r, int b, int g) {

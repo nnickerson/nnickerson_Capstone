@@ -46,7 +46,7 @@ public class Change extends JMenu {
 						inspiram.displayJAIimage = null;
 						inspiram.removeOldComponents();
 						inspiram.displayJAIimage = new DisplayJAI(inspiram.loadedImage);
-						inspiram.imageHolder.add(inspiram.displayJAIimage);
+						inspiram.layersHolder.add(inspiram.displayJAIimage);
 	
 	
 						inspiram.getContentPane().repaint();

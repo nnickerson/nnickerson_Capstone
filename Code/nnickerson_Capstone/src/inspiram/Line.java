@@ -61,9 +61,9 @@ public class Line {
 	}
 	
 	public void getLineLocation(final Inspiram inspiram) {
-		inspiram.imageHolder.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		inspiram.layersHolder.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		
-		inspiram.imageHolder.addMouseListener(new MouseListener() {
+		inspiram.layers[inspiram.currentLayer].addMouseListener(new MouseListener() {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -74,18 +74,18 @@ public class Line {
 		public void mousePressed(MouseEvent e) {
 				if(lineClicks == 0) {
 					System.out.println("100 / -100: " + 100/(-100));
-					lineBeginningX = inspiram.imageHolder.getMousePosition().x;
-					lineBeginningY = inspiram.imageHolder.getMousePosition().y;
+					lineBeginningX = inspiram.layers[inspiram.currentLayer].getMousePosition().x;
+					lineBeginningY = inspiram.layers[inspiram.currentLayer].getMousePosition().y;
 					lineClicks++;
 					System.out.println("Line start click! - (" + lineBeginningX + ", " + lineBeginningY + ")");
 				}
 				else {
-					lineEndingX = inspiram.imageHolder.getMousePosition().x;
-					lineEndingY = inspiram.imageHolder.getMousePosition().y;
+					lineEndingX = inspiram.layers[inspiram.currentLayer].getMousePosition().x;
+					lineEndingY = inspiram.layers[inspiram.currentLayer].getMousePosition().y;
 					lineClicks = 0;
-					inspiram.imageHolder.setCursor(Cursor.getDefaultCursor());
-					for(MouseListener ml : inspiram.imageHolder.getMouseListeners()) {
-						inspiram.imageHolder.removeMouseListener(ml);
+					inspiram.layers[inspiram.currentLayer].setCursor(Cursor.getDefaultCursor());
+					for(MouseListener ml : inspiram.layers[inspiram.currentLayer].getMouseListeners()) {
+						inspiram.layers[inspiram.currentLayer].removeMouseListener(ml);
 					}
 					double yDifference = lineEndingY-lineBeginningY;
 					double xDifference = lineEndingX-lineBeginningX;
@@ -107,11 +107,11 @@ public class Line {
 	}
 	
 	public TiledImage drawLine(double lineBX, double lineBY, double lineEX, double lineEY, double slope, Inspiram inspiram) {
-		int width = inspiram.loadedImage.getWidth();
-		int height = inspiram.loadedImage.getHeight();
-		SampleModel mySampleModel = inspiram.loadedImage.getSampleModel();
+		int width = inspiram.layers[inspiram.currentLayer].getWidth();
+		int height = inspiram.layers[inspiram.currentLayer].getHeight();
+		SampleModel mySampleModel = inspiram.layers[inspiram.currentLayer].getLayerImage().getSampleModel();
 		int nbands = mySampleModel.getNumBands();
-		Raster readableRaster = inspiram.loadedImage.getData();
+		Raster readableRaster = inspiram.layers[inspiram.currentLayer].getLayerImage().getData();
 		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
 		int[] pixels = new int[nbands * width * height];
 		readableRaster.getPixels(0, 0, width, height, pixels);
@@ -165,7 +165,7 @@ public class Line {
 		}
 		inspiram.inspiramHistory.addChange(change);
 		writableRaster.setPixels(0, 0, width, height, pixels);
-		TiledImage ti = new TiledImage(inspiram.loadedImage, 1, 1);
+		TiledImage ti = new TiledImage(inspiram.layers[inspiram.currentLayer].getLayerImage(), 1, 1);
 		ti.setData(writableRaster);
 		return ti;
 	}

@@ -78,48 +78,24 @@ public class ImageLoader {
 	}
 
 	public void loadImage(Inspiram inspiram, String imageLocation) {
-		inspiram.loadedImage = loadPlanarImageWithJAI(imageLocation);
-		inspiram.displayJAIimage = null;
-		inspiram.removeOldComponents();
-		inspiram.displayJAIimage = new DisplayJAI(inspiram.loadedImage);
-	//		scrollPane = new JScrollPane(displayJAIimage);
-		inspiram.imageHolder.add(inspiram.displayJAIimage);
-		inspiram.setSize(inspiram.getWidth() - 1, inspiram.getHeight() - 1);
-		inspiram.setSize(inspiram.getWidth() + 1, inspiram.getHeight() + 1);
-		inspiram.imageHolder.repaint();
-		inspiram.repaint();
-		inspiram.getContentPane().repaint();
-		inspiram.welcomeJLabel.setVisible(false);
-	}
-
-	public void addImageLoadMenu(final Inspiram inspiram) {
-		inspiram.mainMenuBar = new JMenuBar();
-	    inspiram.fileMenu = new JMenu("File");
-	    inspiram.editMenu = new JMenu("Edit");
-	    inspiram.toolsMenu = new JMenu("Tools");
-	    inspiram.loadImageOption = new JMenuItem("Load Image");
-	    inspiram.fileMenu.add(inspiram.loadImageOption);
-	    inspiram.mainMenuBar.add(inspiram.fileMenu);
-	    inspiram.mainMenuBar.add(inspiram.editMenu);
-	    inspiram.mainMenuBar.add(inspiram.toolsMenu);
-	    inspiram.setJMenuBar(inspiram.mainMenuBar);
-	    
-	    //Listeners//
-	    inspiram.loadImageOption.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser fileChooser = new JFileChooser();
-				fileChooser.showOpenDialog(null);
-				String imageLocation = fileChooser.getSelectedFile().getAbsolutePath();
-				System.out.println(imageLocation);
-				loadImage(inspiram.inspiramClass, imageLocation);
-			}
-		});
-	    //End of listeners//
-	    
-	    inspiram.getContentPane().repaint();
-	    
-	    inspiram.repaint();
+		if(inspiram.layers.length == 0) {
+			inspiram.addLayer();
+		}
+			PlanarImage newImage = loadPlanarImageWithJAI(imageLocation);
+			inspiram.displayJAIimage = null;
+//			inspiram.removeOldComponents();
+		//		scrollPane = new JScrollPane(displayJAIimage);
+			inspiram.layers[inspiram.currentLayer].setSize(newImage.getWidth(), newImage.getHeight());
+			inspiram.layers[inspiram.currentLayer].setLayerImage(newImage);
+			inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
+			inspiram.displayAllLayers();
+			inspiram.displayLayersOnPanel();
+			System.out.println("Set the current layer to the new image!!!!!!1");
+			inspiram.setSize(inspiram.getWidth() - 1, inspiram.getHeight() - 1);
+			inspiram.setSize(inspiram.getWidth() + 1, inspiram.getHeight() + 1);
+			inspiram.getContentPane().repaint();
+			inspiram.repaint();
+			inspiram.welcomeJLabel.setVisible(false);
+			inspiram.paintSelectedLayer();
 	}
 }
