@@ -5,6 +5,10 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
@@ -18,6 +22,9 @@ import javax.media.jai.TiledImage;
 import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+
+import com.sun.media.jai.widget.DisplayJAI;
 
 /**
  * Creates a locker that holds multiple images. Meant for the purposes of grabbing
@@ -272,5 +279,153 @@ public class Locker extends JMenu {
 		TiledImage myTiledImage = ti;
 		PlanarImage combinedImage = myTiledImage.createSnapshot();
 		return combinedImage;
+	}
+
+	public void pasteImageFromClipboard(Inspiram inspiram) {
+		Locker myLocker = new Locker();
+		Text noText = new Text();
+		Image copiedImage = myLocker.getImageFromClipboard();
+		
+		if(copiedImage != null) {
+			PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
+			
+			inspiram.loadedImage = myLocker.combineImages(inspiram.loadedImage, copiedPlanarImage, inspiram.loadedImage != null);
+			
+			inspiram.displayJAIimage = null;
+			inspiram.removeOldComponents();
+			inspiram.displayJAIimage = new DisplayJAI(inspiram.loadedImage);
+			inspiram.displayJAIimage.setOpaque(false);
+			inspiram.imageHolder.add(inspiram.displayJAIimage);
+			inspiram.imageHolder.setVisible(false);
+	
+			inspiram.getContentPane().repaint();
+			inspiram.setSize(inspiram.getWidth() - 1, inspiram.getHeight() - 1);
+			inspiram.setSize(inspiram.getWidth() + 1, inspiram.getHeight() + 1);
+			inspiram.imageHolder.repaint();
+			inspiram.repaint();
+			inspiram.repaint();
+		}
+		else {
+			System.out.println("The flavor on the clipboard was not an image!");
+		}
+	}
+
+	public void addPasteOption(final Inspiram inspiram) {
+		inspiram.pasteOption = new JMenuItem("Paste");
+	    inspiram.editMenu.add(inspiram.pasteOption);
+	    inspiram.setJMenuBar(inspiram.mainMenuBar);
+	    
+	    //Listeners//
+	    ActionListener pasteListener = new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				pasteImageFromClipboard(inspiram.inspiramClass);				
+			}
+		};
+	    //End of listeners//
+		
+		inspiram.pasteOption.addActionListener(pasteListener);
+		
+		inspiram.thisApplet.addKeyListener(new KeyListener() {
+	
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+	
+			@Override
+			public void keyPressed(KeyEvent e) {
+				System.out.println("KEY PRESSED!: " + e.getKeyCode());
+				
+				if(e.getKeyCode() == KeyEvent.VK_V) {
+					inspiram.vPressed = true;
+					System.out.println("FOUND V KEY");
+				}
+				if(e.getKeyCode() == 17) {
+					inspiram.ctrlPressed = true;
+					System.out.println("FOUND CONTROL KEY");
+				}
+				if(inspiram.ctrlPressed && inspiram.vPressed) {
+					pasteImageFromClipboard(inspiram.inspiramClass);
+				}
+			}
+	
+			@Override
+			public void keyReleased(KeyEvent e) {
+				if(e.getKeyChar() == KeyEvent.VK_V) {
+					inspiram.vPressed = false;
+				}
+				if(e.getKeyCode() == KeyEvent.CTRL_DOWN_MASK) {
+					inspiram.ctrlPressed = false;
+				}
+			}
+			
+		});
+		inspiram.thisApplet.setFocusable(true);
+	    
+	    inspiram.getContentPane().repaint();
+	    
+	    inspiram.repaint();
+	}
+
+	public void addInspiramLocker(final Inspiram inspiram) {
+		inspiram.mainMenuBar.add(this);
+		ActionListener lockerListener = new ActionListener() {
+	
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JMenuItem chosenMenuItem = (JMenuItem) e.getSource();
+				String chosenItemName = chosenMenuItem.getName();
+				if(chosenItemName.equalsIgnoreCase("Store")) {
+					System.out.println("Storing image in locker!");
+					JPopupMenu popupMenu = (JPopupMenu)chosenMenuItem.getParent();
+					JMenu parentMenu = (JMenu)popupMenu.getInvoker();
+					int chosenImageNumber = Integer.parseInt(parentMenu.getName());
+					addCopiedImageToLocker(chosenImageNumber);
+				}
+				else {
+					System.out.println("Pasting image from locker!");
+					JPopupMenu popupMenu = (JPopupMenu)chosenMenuItem.getParent();
+					JMenu parentMenu = (JMenu)popupMenu.getInvoker();
+					int chosenImageNumber = Integer.parseInt(parentMenu.getName());
+					Text noText = new Text();
+					Image copiedImage = getImageFromLocker(chosenImageNumber);
+					System.out.println("Pasting image from Locker!");
+					if(copiedImage != null) {
+						PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
+						
+						inspiram.loadedImage = combineImages(inspiram.loadedImage, copiedPlanarImage, inspiram.loadedImage != null);
+						
+						inspiram.displayJAIimage = null;
+						inspiram.removeOldComponents();
+						inspiram.displayJAIimage = new DisplayJAI(inspiram.loadedImage);
+						inspiram.imageHolder.add(inspiram.displayJAIimage);
+	
+	
+						inspiram.thisApplet.getContentPane().repaint();
+						inspiram.thisApplet.setSize(inspiram.thisApplet.getWidth() - 1, inspiram.thisApplet.getHeight() - 1);
+						inspiram.thisApplet.setSize(inspiram.thisApplet.getWidth() + 1, inspiram.thisApplet.getHeight() + 1);
+						inspiram.imageHolder.repaint();
+						inspiram.thisApplet.repaint();
+						inspiram.repaint();
+					}
+					else {
+						System.out.println("The flavor on the clipboard was not an image!");
+					}
+				}
+			}
+		};
+		
+		System.out.println("Images held in locker: " + getItemCount());
+		
+		for(int i = 0; i < getItemCount(); i++) {
+			JMenu pickedMenuItem = (JMenu)getItem(i);
+			JMenuItem pasteStoredImageOption = (JMenuItem)pickedMenuItem.getItem(0);
+			JMenuItem storeImageOption = (JMenuItem)pickedMenuItem.getItem(1);
+			pasteStoredImageOption.addActionListener(lockerListener);
+			storeImageOption.addActionListener(lockerListener);
+		}
 	}
 }

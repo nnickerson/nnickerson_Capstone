@@ -1,11 +1,14 @@
 package inspiram;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.PlanarImage;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
 public class ImageSaver {
@@ -14,6 +17,25 @@ public class ImageSaver {
 
 	public ImageSaver() {
 		
+	}
+	
+	public void addSaveOption(final Inspiram inspiram) {
+		inspiram.saveOption = new JMenuItem("Save Image");
+		inspiram.fileMenu.add(inspiram.saveOption);
+		inspiram.setJMenuBar(inspiram.mainMenuBar);
+		
+		//Listeners//
+	    ActionListener saveListener = new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ImageSaver imageSaver = new ImageSaver();
+				imageSaver.saveImageAsPNG(inspiram.loadedImage, false, "");
+			}
+		};
+		
+		inspiram.saveOption.addActionListener(saveListener);
+	    //End of listeners//
 	}
 	
 	/**

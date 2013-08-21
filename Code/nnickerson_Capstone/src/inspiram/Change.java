@@ -1,5 +1,7 @@
 package inspiram;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -10,6 +12,7 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 
 import com.sun.media.jai.widget.DisplayJAI;
 
@@ -24,6 +27,37 @@ public class Change extends JMenu {
 		this.setText(description);
 		undoChange.setText("Undo");
 		this.add(undoChange);
+	}
+	
+	public ActionListener createChangeUndoListener(final Inspiram inspiram) {
+		ActionListener changeUndoListener = new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JMenuItem chosenMenuItem = (JMenuItem) e.getSource();
+				
+					System.out.println("Undoing image from history!");
+					JPopupMenu popupMenu = (JPopupMenu)chosenMenuItem.getParent();
+					Change parentMenu = (Change)popupMenu.getInvoker();
+					System.out.println("Undoing image from history!");
+						
+						inspiram.loadedImage = parentMenu.revertChange(inspiram.loadedImage);
+						
+						inspiram.displayJAIimage = null;
+						inspiram.removeOldComponents();
+						inspiram.displayJAIimage = new DisplayJAI(inspiram.loadedImage);
+						inspiram.imageHolder.add(inspiram.displayJAIimage);
+	
+	
+						inspiram.getContentPane().repaint();
+						inspiram.setSize(inspiram.getWidth() - 1, inspiram.getHeight() - 1);
+						inspiram.setSize(inspiram.getWidth() + 1, inspiram.getHeight() + 1);
+						inspiram.repaint();
+						inspiram.repaint();
+						repaint();
+			}
+		};
+		return changeUndoListener;
 	}
 	
 	public PlanarImage revertChange(PlanarImage pImage) {

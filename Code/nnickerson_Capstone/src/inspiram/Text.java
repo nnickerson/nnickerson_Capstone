@@ -28,6 +28,7 @@ public class Text {
 		biGraphics.setColor(Color.yellow);
 		biGraphics.drawString(text, textX, textY);
 		Image textImage = bi;
+		System.out.println("PUTTING TEXT ONTO IMAGE");
 		return textImage;
 	}
 	
