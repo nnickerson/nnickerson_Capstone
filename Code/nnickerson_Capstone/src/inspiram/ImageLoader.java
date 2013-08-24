@@ -79,7 +79,11 @@ public class ImageLoader {
 		//		scrollPane = new JScrollPane(displayJAIimage);
 			inspiram.layers[inspiram.currentLayer].setSize(newImage.getWidth(), newImage.getHeight());
 			inspiram.layers[inspiram.currentLayer].setLayerImage(newImage);
-			inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
+			inspiram.layers[inspiram.currentLayer].setPlainImage();
+			inspiram.layers[inspiram.currentLayer].add(inspiram.layers[inspiram.currentLayer].getImageDisplay());
+//			inspiram.layers[inspiram.currentLayer].setLayerImage(null);
+			inspiram.repaintEverything();
+//			inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
 			inspiram.displayAllLayers();
 			inspiram.displayLayersOnPanel();
 			System.out.println("Set the current layer to the new image!!!!!!1");

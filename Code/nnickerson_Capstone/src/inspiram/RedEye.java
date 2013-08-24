@@ -254,7 +254,10 @@ public class RedEye {
 		inspiram.sliderFrame.dispose();
 		TiledImage myTiledImage = fixRedEyePixels(inspiram, inspiram.layers[inspiram.currentLayer].getLayerImage());
 		inspiram.layers[inspiram.currentLayer].setLayerImage(inspiram.tiledImageToPlanarImage(myTiledImage));
-		inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
+//		inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
+		inspiram.layers[inspiram.currentLayer].setPlainImage();
+		inspiram.layers[inspiram.currentLayer].add(inspiram.layers[inspiram.currentLayer].getImageDisplay());
+		inspiram.layers[inspiram.currentLayer].setLayerImage(null);
 	}
 	
 	public float[] getHSB(int r, int b, int g) {

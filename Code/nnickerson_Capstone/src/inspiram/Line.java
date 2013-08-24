@@ -92,6 +92,8 @@ public class Line {
 					double slope = (((yDifference)/(xDifference)));
 					System.out.println("Line end click! - (" + lineEndingX + ", " + lineEndingY + ")");
 					inspiram.displayTiledImage(drawLine(lineBeginningX, lineBeginningY, lineEndingX, lineEndingY, slope, inspiram));
+					System.gc();
+					inspiram.newLine();
 				}
 		}
 
@@ -107,6 +109,7 @@ public class Line {
 	}
 	
 	public TiledImage drawLine(double lineBX, double lineBY, double lineEX, double lineEY, double slope, Inspiram inspiram) {
+		System.gc();
 		int width = inspiram.layers[inspiram.currentLayer].getWidth();
 		int height = inspiram.layers[inspiram.currentLayer].getHeight();
 		SampleModel mySampleModel = inspiram.layers[inspiram.currentLayer].getLayerImage().getSampleModel();
@@ -147,7 +150,6 @@ public class Line {
 					int prevR = new Integer(pixels[pixelIndex + pixelHistory.R_BAND]);
 					int prevG = new Integer(pixels[pixelIndex + pixelHistory.G_BAND]);
 					int prevB = new Integer(pixels[pixelIndex + pixelHistory.B_BAND]);
-					System.out.println("PR: " + prevR);
 				
 					pixelHistory.setPrevR(prevR);
 					pixelHistory.setPrevG(prevG);

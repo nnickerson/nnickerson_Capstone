@@ -273,6 +273,8 @@ public class Inspiram extends JApplet {
 					Text texter = new Text();
 					PlanarImage myTextImage = texter.getPlanarImageFromImage(texter.putTextOnPlanarImage(layers[currentLayer].getLayerImage(), textX, textY, text));
 					displayTiledImage(createText(textX, textY, myTextImage));
+					texter = null;
+					System.gc();
 			}
 
 		@Override
@@ -337,13 +339,22 @@ public class Inspiram extends JApplet {
 	 */
 	public void displayTiledImage(TiledImage myTiledImage) {
 		layers[currentLayer].setLayerImage(myTiledImage.createSnapshot());
+		layers[currentLayer].setPlainImage();
+		layers[currentLayer].add(layers[currentLayer].getImageDisplay());
+		layers[currentLayer].setLayerImage(null);
 //		removeOldComponents();
-		layers[currentLayer].set(layers[currentLayer].getLayerImage());
+//		layers[currentLayer].set(layers[currentLayer].getLayerImage());
 		this.getContentPane().repaint();
 		
 		this.setSize(this.getWidth()-1, this.getHeight()-1);
 		this.setSize(this.getWidth()+1, this.getHeight()+1);
 		repaintEverything();
+	}
+	
+	public void createRedEye() {
+		redEye = null;
+		System.gc();
+		redEye = new RedEye();
 	}
 	
 	public int[] createBoundingBoxes(int width, int height, int nbands, int[] pixels) {
@@ -438,6 +449,12 @@ public class Inspiram extends JApplet {
 	public void addLayersHolder() {
 		layersHolder.setBackground(Color.GRAY);
 //		container.add(layersHolder, BorderLayout.WEST);
+	}
+	
+	public void newLine() {
+		line = null;
+		System.gc();
+		line = new Line();
 	}
 	
 	public void addLayersPanel() {

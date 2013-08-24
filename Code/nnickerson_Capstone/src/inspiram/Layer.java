@@ -1,8 +1,12 @@
 package inspiram;
 
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 
 import javax.media.jai.PlanarImage;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.sun.media.jai.widget.DisplayJAI;
@@ -11,13 +15,42 @@ public class Layer extends DisplayJAI {
 
 	String layerName = "";
 	int LayerID = 0;
-	PlanarImage layerImage;
-	DisplayJAI layerDisplay;
+	private PlanarImage layerImage;
+	private DisplayJAI layerDisplay;
+	private Image plainImage;
+	private JLabel imageDisplay;
 	
 	public Layer(String layerName, int layerID)  {
 		this.layerName = layerName;
 		this.LayerID = layerID;
 		setupBlankLayer();
+	}
+	
+	
+	
+	public Image getPlainImage() {
+		return plainImage;
+	}
+
+	public JLabel getImageDisplay() {
+		return imageDisplay;
+	}
+
+
+
+	public void setImageDisplay(JLabel imageDisplay) {
+		this.imageDisplay = imageDisplay;
+	}
+
+
+
+	public void setPlainImage() {
+		plainImage = layerImage.getAsBufferedImage();
+		this.removeAll();
+		imageDisplay = new JLabel();
+		imageDisplay.setIcon(new ImageIcon(plainImage));
+		imageDisplay.setSize(layerImage.getWidth(), layerImage.getHeight());
+		layerImage = null;
 	}
 	
 	public DisplayJAI getLayerDisplay() {
@@ -29,7 +62,8 @@ public class Layer extends DisplayJAI {
 	}
 
 	public PlanarImage getLayerImage() {
-		return layerImage;
+		Text t = new Text();
+		return t.getPlanarImageFromImage(this.plainImage);
 	}
 
 	public void setLayerImage(PlanarImage layerImage) {
