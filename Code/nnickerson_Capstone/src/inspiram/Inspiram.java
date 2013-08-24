@@ -343,9 +343,7 @@ public class Inspiram extends JApplet {
 		
 		this.setSize(this.getWidth()-1, this.getHeight()-1);
 		this.setSize(this.getWidth()+1, this.getHeight()+1);
-		imageHolder.repaint();
-		this.repaint();
-		repaint();
+		repaintEverything();
 	}
 	
 	public int[] createBoundingBoxes(int width, int height, int nbands, int[] pixels) {
@@ -451,26 +449,30 @@ public class Inspiram extends JApplet {
 		layersPanel.setLayout(new BoxLayout(layersPanel, BoxLayout.Y_AXIS));
 		this.add(layersPanel, BorderLayout.EAST);
 //		this.add(layersHolder);
-		layersPanel.repaint();
-		layersPanel.updateUI();
-		layersHolder.repaint();
-		container.repaint();
-		this.repaint();		
+		repaintEverything();	
 	}
 	
 	public void displayLayersOnPanel() {
 		layersPanel.removeAll();
-		//Setting up button//
+		this.add(layersPanel, BorderLayout.EAST);
+		//Setting up button listeners//
 		ActionListener layerButtonsListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JButton layerUpButton = (JButton)e.getSource();
-				JPanel layerPanel = (JPanel)layerUpButton.getParent();
-				moveLayerUp(Integer.parseInt(layerUpButton.getName().split(" ")[1]));
-				System.out.println(layerUpButton.getName());
+				JButton layerButton = (JButton)e.getSource();
+				JPanel layerPanel = (JPanel)layerButton.getParent();
+				
+				if(layerButton.getText().contains("up")) {
+					moveLayerUp(Integer.parseInt(layerButton.getName().split(" ")[1]));
+					System.out.println("Layer movement: " + layerButton.getName());
+				}
+				else if(layerButton.getText().contains("down")) {
+					moveLayerDown(Integer.parseInt(layerButton.getName().split(" ")[1]));
+					System.out.println("Layer movement: " + layerButton.getName());
+				}
 			}
 		};
-		//Ending button setup//
+		//Ending button listeners setup//
 		
 		for(Layer layer : layers) {
 			JPanel newLayerPanel = new JPanel();
@@ -520,13 +522,12 @@ public class Inspiram extends JApplet {
 			layersPanel.add(newLayerPanel);
 		}
 		System.out.println("PANELS INSTEAD OF BUTTON");
-		layersPanel.repaint();
-		layersPanel.updateUI();
-		container.repaint();
-		this.repaint();
+		correctLayerIdentities();
+		repaintEverything();
 	}
 	
 	public void addLayer() {
+		layersPanel.removeAll();
 		Layer[] tempLayers = new Layer[layers.length];
 		for(int i = 0; i < layers.length; i++) {
 			System.out.println(layers[i].getLayerName() + " LAYER");
@@ -543,7 +544,6 @@ public class Inspiram extends JApplet {
 		layers[layers.length-1] = newLayer;
 		layers[0].setBackground(Color.green);
 		try {
-			layers[0].removeAll();
 			layers[0].setOpaque(false);
 //			layers[0].add(new JLabel(new ImageIcon(ImageIO.read(new File("images.jpg")))));
 		} catch (Exception e) {
@@ -551,7 +551,6 @@ public class Inspiram extends JApplet {
 		}
 		
 		if(layers.length > 1) {
-			layers[1].removeAll();
 			layers[1].setBackground(Color.red);
 			layers[1].setOpaque(false);
 			try {
@@ -560,13 +559,18 @@ public class Inspiram extends JApplet {
 				e.printStackTrace();
 			}
 		}
+		correctLayerIdentities();
 		displayAllLayers();
 		displayLayersOnPanel();
+		correctLayerIdentities();
 		layersPanel.getComponent(layersPanel.getComponentCount()-1).setBackground(Color.WHITE);
+		repaintEverything();
 	}
 	
 	public void displayAllLayers() {
 		layersHolder.removeAll();
+		container.removeAll();
+//		layersPanel.removeAll();
 		for(Layer layer : layers) {
 			System.out.println("Adding layer back to holder!");
 			layer.setOpaque(false);
@@ -574,18 +578,42 @@ public class Inspiram extends JApplet {
 			welcomeJLabel.setVisible(false);
 		}
 		container.add(layersHolder); //Limits the area for each layer
-		layersHolder.repaint();
-		layersHolder.updateUI();
-		imageHolder.repaint();
-		container.repaint();
-		this.repaint();
+		correctLayerIdentities();
+		displayLayersOnPanel();
+		correctLayerIdentities();
+		repaintEverything();
 	}
 	
 	public PlanarImage tiledImageToPlanarImage(TiledImage tiledImage) {
 		return tiledImage.createSnapshot();
 	}
 	
+	public void moveLayerDown(int movingLayersID) {
+		int layerPositionMoving = 0;
+		int layerPositionBelow = 0;
+		Layer tempLayer;
+		for(int i = 0; i < layers.length; i++) {
+			if(layers[i].getLayerID() == movingLayersID) {
+				if(i != layers.length-1) {
+					layerPositionMoving = i;
+					layerPositionBelow = i+1;
+					currentLayer = i;
+					i = layers.length;
+				}
+			}
+		}
+		tempLayer = layers[layerPositionMoving];
+		layers[layerPositionMoving] = layers[layerPositionBelow];
+		layers[layerPositionBelow] = tempLayer;
+		displayLayersOnPanel();
+		displayAllLayers();
+		correctLayerIdentities();
+		paintSelectedLayer();
+		repaintEverything();
+	}
+	
 	public void moveLayerUp(int movingLayersID) {
+		
 		int layerPositionMoving = 0;
 		int layerPositionAbove = 0;
 		Layer tempLayer;
@@ -596,7 +624,6 @@ public class Inspiram extends JApplet {
 					layerPositionAbove = i-1;
 					currentLayer = i;
 					i = layers.length;
-					
 				}
 			}
 		}
@@ -605,11 +632,78 @@ public class Inspiram extends JApplet {
 		layers[layerPositionAbove] = tempLayer;
 		displayLayersOnPanel();
 		displayAllLayers();
+		correctLayerIdentities();
 		paintSelectedLayer();
+		repaintEverything();
 	}
 	
 	public void deleteLayer() {
+		layersHolder.removeAll();
+		layersHolder.repaint();
+		layersHolder.updateUI();
+		if(layers.length > 0) {
+			Layer[] tempLayers = new Layer[layers.length-1];
+			int tempLayerIndex = 0;
+			for(int i = 0; i < layers.length; i++) {
+				if(i == currentLayer) {
+					//Do nothing
+				}
+				else {
+					System.out.println("Color: " + layers[i].getBackground());
+					tempLayers[tempLayerIndex] = layers[i];
+					tempLayerIndex++;
+				}
+			}
+			layers = new Layer[tempLayers.length];
+			System.out.println("Now for the new layers..");
+			for(int i = 0; i < layers.length; i++) {
+				layers[i] = tempLayers[i];
+				System.out.println("Color: " + layers[i].getBackground());
+			}
+		}
+		else {
+			JOptionPane.showMessageDialog(null, "There are no layers to delete!");
+		}
 		
+		displayAllLayers();
+		displayLayersOnPanel();
+		correctLayerIdentities();
+		repaintEverything();
+	}
+	
+	public void repaintEverything() {
+		repaint();
+		this.repaint();
+		container.repaint();
+		layersHolder.repaint();
+		layersPanel.repaint();
+		layersHolder.updateUI();
+		layersPanel.updateUI();
+		for(int i = 0; i < layersPanel.getComponentCount(); i++) {
+			layersPanel.getComponent(i).repaint();
+		}
+	}
+	
+	public void correctLayerIdentities() {
+		for(int i = 0; i < layersPanel.getComponentCount(); i++) {
+			JPanel layerToChange = null;
+			layerToChange = (JPanel)layersPanel.getComponent(i);
+			layerToChange.setName("Layer " + i);
+			JButton upButton = (JButton)layerToChange.getComponent(1);
+			upButton.setText("Layer " + i + " up");
+			upButton.setName("Layer " + i + " up");
+			
+			JButton downButton = (JButton)layerToChange.getComponent(2);
+			downButton.setText("Layer " + i + " down");
+			downButton.setName("Layer " + i + " down");
+		}
+		for(int i = 0; i < layers.length; i++) {
+			Layer layerToChange = null;
+			layerToChange = layers[i];
+			layerToChange.setLayerName("Layer " + i);
+			layerToChange.setLayerID(i);
+			layers[i] = layerToChange;
+		}
 	}
 	
 //	public void paint(Graphics g) {

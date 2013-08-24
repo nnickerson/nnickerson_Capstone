@@ -2,20 +2,12 @@ package inspiram;
 
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.media.jai.*;
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-
-import com.sun.media.jai.widget.DisplayJAI;
 
 /**
  * 
@@ -93,9 +85,8 @@ public class ImageLoader {
 			System.out.println("Set the current layer to the new image!!!!!!1");
 			inspiram.setSize(inspiram.getWidth() - 1, inspiram.getHeight() - 1);
 			inspiram.setSize(inspiram.getWidth() + 1, inspiram.getHeight() + 1);
-			inspiram.getContentPane().repaint();
-			inspiram.repaint();
 			inspiram.welcomeJLabel.setVisible(false);
 			inspiram.paintSelectedLayer();
+			inspiram.repaintEverything();
 	}
 }
