@@ -40,6 +40,10 @@ public class Line {
 		return yIntercept;
 	}
 	
+	/**
+	 * Adds a JMenuItem for the line add option.
+	 * @param inspiram
+	 */
 	public void addCreateLineMenu(final Inspiram inspiram) {
 	    inspiram.createLineOption = new JMenuItem("Create Line");
 	    inspiram.toolsMenu.add(inspiram.createLineOption);
@@ -60,8 +64,12 @@ public class Line {
 	    inspiram.repaint();
 	}
 	
+	/**
+	 * Grabs the line start location and the line end location from user input.
+	 * @param inspiram
+	 */
 	public void getLineLocation(final Inspiram inspiram) {
-		inspiram.layersHolder.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		inspiram.layers[inspiram.currentLayer].setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 		
 		inspiram.layers[inspiram.currentLayer].addMouseListener(new MouseListener() {
 
@@ -108,6 +116,16 @@ public class Line {
 		});
 	}
 	
+	/**
+	 * Draws the line into the PlanarImage.
+	 * @param lineBX
+	 * @param lineBY
+	 * @param lineEX
+	 * @param lineEY
+	 * @param slope
+	 * @param inspiram
+	 * @return
+	 */
 	public TiledImage drawLine(double lineBX, double lineBY, double lineEX, double lineEY, double slope, Inspiram inspiram) {
 		System.gc();
 		int width = inspiram.layers[inspiram.currentLayer].getWidth();
@@ -138,8 +156,12 @@ public class Line {
 		
 		Change change = new Change("Line Creation");
 		change.undoChange.addActionListener(change.createChangeUndoListener(inspiram));
-		
-		for (double x = x1; x <= x2; x+=.01) {
+		System.out.println("SLOPE: " + slope);
+//		int minimalWhite = 0;
+//		int maximumWhite = 255;
+		for (double x = x1+.5; x <= x2+.5; x+=.01) {
+			int newInt = (int)x;
+			
 			double y = (slope * x) + yIntercept;
 				pixelIndex = (int)y * width * nbands + (int)x * nbands;
 				if(x == lineBX || x == lineEX-1) {
@@ -155,6 +177,20 @@ public class Line {
 					pixelHistory.setPrevG(prevG);
 					pixelHistory.setPrevB(prevB);
 				}
+//				System.out.println("" + x + "\n" + (0<x) + "\n" + (x<1) + "\n" + (slope<0));
+				if(0 <= (x%1) && (x%1) < .01 && slope < 0) {
+//					int aaIndexUp = ((int)(y-1)) * width * nbands + ((int)(x)) * nbands;
+//					int aaIndexRight = ((int)(y)) * width * nbands + ((int)(x+1)) * nbands;
+//					pixels[(aaIndexUp) + (0)] = 87;
+//					pixels[(aaIndexUp) + (1)] = 170;
+//					pixels[(aaIndexUp) + (2)] = 34;
+//					pixels[(aaIndexRight) + (0)] = 87;
+//					pixels[(aaIndexRight) + (1)] = 170;
+//					pixels[(aaIndexRight) + (2)] = 34;
+//					System.out.println("HIT: " + x);
+					pixels = antiAlias(pixels, (int)y, width, nbands, (int)x);
+				}
+//				double antiAliasedValue = (maximumWhite-((maximumWhite-minimalWhite)-((maximumWhite-minimalWhite)*(x%1))));
 					pixels[(pixelIndex - 0) + (0)] = 255;
 					pixels[(pixelIndex - 0) + (1)] = 255;
 					pixels[(pixelIndex - 0) + (2)] = 255;
@@ -164,12 +200,157 @@ public class Line {
 					if(!change.getAllPixelHistory().contains(pixelHistory.x) && !change.getAllPixelHistory().contains(pixelHistory.y)) {
 						change.getAllPixelHistory().add(pixelHistory);
 					}
+					pixels = antiAlias2(pixels, (int)y, width, nbands, (int)x);
 		}
 		inspiram.inspiramHistory.addChange(change);
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(inspiram.layers[inspiram.currentLayer].getLayerImage(), 1, 1);
 		ti.setData(writableRaster);
 		return ti;
+	}
+	
+	public int[] antiAlias(int[] pixels, int y, int width, int nbands, int x) {
+		int pixelIndex = (int)y * width * nbands + (int)x * nbands;
+		int east3 = (int)y * width * nbands + ((int)(x+3)) * nbands;
+		int west3 = (int)y * width * nbands + ((int)(x-3)) * nbands;
+		int north3 = ((int)(y-3)) * width * nbands + ((int)(x+0)) * nbands;
+		int south3 = ((int)(y+3)) * width * nbands + ((int)(x+0)) * nbands;
+		int east1 = (int)y * width * nbands + ((int)(x+1)) * nbands;
+		int west1 = (int)y * width * nbands + ((int)(x-1)) * nbands;
+		int north1 = ((int)(y-1)) * width * nbands + ((int)(x+0)) * nbands;
+		int south1 = ((int)(y+1)) * width * nbands + ((int)(x+0)) * nbands;
+		int east2 = (int)y * width * nbands + ((int)(x+2)) * nbands;
+		int west2 = (int)y * width * nbands + ((int)(x-2)) * nbands;
+		int north2 = ((int)(y-2)) * width * nbands + ((int)(x+0)) * nbands;
+		int south2 = ((int)(y+2)) * width * nbands + ((int)(x+0)) * nbands;
+		int currentR = pixels[pixelIndex+0];
+		int currentG = pixels[pixelIndex+1];
+		int currentB = pixels[pixelIndex+2];
+		
+		//East//
+		int east3R = pixels[(east3)+0];
+		int east3G = pixels[(east3)+1];
+		int east3B = pixels[(east3)+2];
+		int differenceR = currentR-east3R;
+		int differenceG = currentG-east3G;
+		int differenceB = currentB-east3B;
+		pixels[(east1)+0] = ((differenceR/3)*2)+east3R;
+		pixels[(east1)+1] = ((differenceG/3)*2)+east3G;
+		pixels[(east1)+2] = ((differenceB/3)*2)+east3B;
+		pixels[(east2)+0] = ((differenceR/3))+east3R;
+		pixels[(east2)+1] = ((differenceG/3))+east3G;
+		pixels[(east2)+2] = ((differenceB/3))+east3B;
+		
+		
+		
+		//West/
+				int west3R = pixels[(west3)+0];
+				int west3G = pixels[(west3)+1];
+				int west3B = pixels[(west3)+2];
+				differenceR = currentR-west3R;
+				differenceG = currentG-west3G;
+				differenceB = currentB-west3B;
+				pixels[(west1)+0] = ((differenceR/3)*2)+west3R;
+				pixels[(west1)+1] = ((differenceG/3)*2)+west3G;
+				pixels[(west1)+2] = ((differenceB/3)*2)+west3B;
+				pixels[(west2)+0] = ((differenceR/3))+west3R;
+				pixels[(west2)+1] = ((differenceG/3))+west3G;
+				pixels[(west2)+2] = ((differenceB/3))+west3B;
+				
+				//South//
+				int south3R = pixels[(south3)+0];
+				int south3G = pixels[(south3)+1];
+				int south3B = pixels[(south3)+2];
+				differenceR = currentR-south3R;
+				differenceG = currentG-south3G;
+				differenceB = currentB-south3B;
+				pixels[(south1)+0] = ((differenceR/3)*2)+south3R;
+				pixels[(south1)+1] = ((differenceG/3)*2)+south3G;
+				pixels[(south1)+2] = ((differenceB/3)*2)+south3B;
+				pixels[(south2)+0] = ((differenceR/3))+south3R;
+				pixels[(south2)+1] = ((differenceG/3))+south3G;
+				pixels[(south2)+2] = ((differenceB/3))+south3B;
+				
+				//North//
+				int north3R = pixels[(north3)+0];
+				int north3G = pixels[(north3)+1];
+				int north3B = pixels[(north3)+2];
+				differenceR = currentR-north3R;
+				differenceG = currentG-north3G;
+				differenceB = currentB-north3B;
+				pixels[(north1)+0] = ((differenceR/3)*2)+north3R;
+				pixels[(north1)+1] = ((differenceG/3)*2)+north3G;
+				pixels[(north1)+2] = ((differenceB/3)*2)+north3B;
+				pixels[(north2)+0] = ((differenceR/3))+north3R;
+				pixels[(north2)+1] = ((differenceG/3))+north3G;
+				pixels[(north2)+2] = ((differenceB/3))+north3B;
+		
+		
+		return pixels;
+	}
+	
+	public int[] antiAlias2(int[] pixels, int y, int width, int nbands, int x) {
+		int pixelIndex = (int)y * width * nbands + (int)x * nbands;
+		int east2 = (int)y * width * nbands + ((int)(x+2)) * nbands;
+		int west2 = (int)y * width * nbands + ((int)(x-2)) * nbands;
+		int north2 = ((int)(y-2)) * width * nbands + ((int)(x+0)) * nbands;
+		int south2 = ((int)(y+2)) * width * nbands + ((int)(x+0)) * nbands;
+		int east1 = (int)y * width * nbands + ((int)(x+1)) * nbands;
+		int west1 = (int)y * width * nbands + ((int)(x-1)) * nbands;
+		int north1 = ((int)(y-1)) * width * nbands + ((int)(x+0)) * nbands;
+		int south1 = ((int)(y+1)) * width * nbands + ((int)(x+0)) * nbands;
+		int currentR = pixels[pixelIndex+0];
+		int currentG = pixels[pixelIndex+1];
+		int currentB = pixels[pixelIndex+2];
+		
+		//East//
+		int east2R = pixels[(east2)+0];
+		int east2G = pixels[(east2)+1];
+		int east2B = pixels[(east2)+2];
+		int differenceR = currentR-east2R;
+		int differenceG = currentG-east2G;
+		int differenceB = currentB-east2B;
+		pixels[(east1)+0] = ((differenceR/3))+east2R;
+		pixels[(east1)+1] = ((differenceG/3))+east2G;
+		pixels[(east1)+2] = ((differenceB/3))+east2B;
+		
+		
+		
+		//West/
+				int west2R = pixels[(west2)+0];
+				int west2G = pixels[(west2)+1];
+				int west2B = pixels[(west2)+2];
+				differenceR = currentR-west2R;
+				differenceG = currentG-west2G;
+				differenceB = currentB-west2B;
+				pixels[(west1)+0] = ((differenceR/3))+west2R;
+				pixels[(west1)+1] = ((differenceG/3))+west2G;
+				pixels[(west1)+2] = ((differenceB/3))+west2B;
+				
+				//South//
+				int south2R = pixels[(south2)+0];
+				int south2G = pixels[(south2)+1];
+				int south2B = pixels[(south2)+2];
+				differenceR = currentR-south2R;
+				differenceG = currentG-south2G;
+				differenceB = currentB-south2B;
+				pixels[(south1)+0] = ((differenceR/3))+south2R;
+				pixels[(south1)+1] = ((differenceG/3))+south2G;
+				pixels[(south1)+2] = ((differenceB/3))+south2B;
+				
+				//North//
+				int north2R = pixels[(north2)+0];
+				int north2G = pixels[(north2)+1];
+				int north2B = pixels[(north2)+2];
+				differenceR = currentR-north2R;
+				differenceG = currentG-north2G;
+				differenceB = currentB-north2B;
+				pixels[(north1)+0] = ((differenceR/3))+north2R;
+				pixels[(north1)+1] = ((differenceG/3))+north2G;
+				pixels[(north1)+2] = ((differenceB/3))+north2B;
+		
+		
+		return pixels;
 	}
 
 	public int getLineWidth() {
