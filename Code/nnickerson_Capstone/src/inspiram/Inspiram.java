@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.ImageObserver;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
@@ -120,12 +121,47 @@ public class Inspiram extends JApplet {
 		line.addCreateLineMenu(inspiramClass);
 		addBezierCurveDemos();
 		addTextOption();
+		addResizeOption();
 		inspiramLocker.addPasteOption(this);
 		imageSaver.addSaveOption(inspiramClass);
 		inspiramLocker.addInspiramLocker(this);
 		mainMenuBar.add(inspiramHistory);
 		welcomeJLabel = new JLabel("Click File > Load Image > Choose a png, not tested with other formats yet.");
 	    this.add(welcomeJLabel);
+	}
+	
+	public void addResizeOption() {
+		JMenuItem resizeOption = new JMenuItem("Resize Image On Layer");
+		editMenu.add(resizeOption);
+		
+	    resizeOption.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("RESIZE YOUR IMAGE");
+				int[] widthAndHeightAndScale = getNewImageSize();
+				Text texter = new Text();
+				
+				layers[currentLayer].setLayerImage(texter.getPlanarImageFromImage(layers[currentLayer].getPlainImage()));
+				System.out.println("THE LAYRE IMAGE: " + layers[currentLayer].getLayerImage());
+				layers[currentLayer].setLayerImage(Resizer.resizeImage(layers[currentLayer].getLayerImage(),widthAndHeightAndScale[0],widthAndHeightAndScale[1],widthAndHeightAndScale[2]));
+				System.out.println("THE LAYRE IMAGE: " + layers[currentLayer].getLayerImage());
+				layers[currentLayer].setPlainImage();
+				layers[currentLayer].setSize(widthAndHeightAndScale[0], widthAndHeightAndScale[1]);
+			}
+		});
+	    
+	    getContentPane().repaint();	    
+	    repaint();
+	}
+	
+	public int[] getNewImageSize() {
+		ResizerSlider rs = new ResizerSlider(layers[currentLayer].getWidth(), layers[currentLayer].getHeight());
+		int[] widthAndHeightAndScale = new int[3];
+		widthAndHeightAndScale[0] = rs.currentWidth;
+		widthAndHeightAndScale[1] = rs.currentHeight;
+		widthAndHeightAndScale[2] = rs.percent;
+		return widthAndHeightAndScale;
 	}
 	
 	public void addImageLoadMenu() {

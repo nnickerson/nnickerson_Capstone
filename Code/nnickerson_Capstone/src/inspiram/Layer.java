@@ -67,6 +67,7 @@ public class Layer extends DisplayJAI {
 	}
 
 	public void setLayerImage(PlanarImage layerImage) {
+		System.out.println("SETTING LAYER IMAGE: " + layerImage.getWidth() + ", " + layerImage.getHeight());
 		this.layerImage = layerImage;
 	}
 

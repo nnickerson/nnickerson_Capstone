@@ -147,12 +147,12 @@ public class RedEye {
 				g = pixels[pixelIndex+1];
 				b = pixels[pixelIndex+2];
 				if(isRedEyeValues(r, g, b)) {
-//					pixels[pixelIndex+(0)] = 0;
-//					pixels[pixelIndex+(1)] = 10;
-//					pixels[pixelIndex+(2)] = 10;
+					pixels[pixelIndex+(0)] = 0;
+					pixels[pixelIndex+(1)] = 10;
+					pixels[pixelIndex+(2)] = 10;
 //					pixels = -antiAliasRedEye(pixels, pixelIndex, x, y, width, nbands);
+					pixels = antiAlias(pixels, (int)y, width, nbands, (int)x);
 				}
-				pixels = antiAlias(pixels, (int)y, width, nbands, (int)x);
 			}
 		}
 		writableRaster.setPixels(0, 0, width, height, pixels);
