@@ -111,7 +111,7 @@ public class RedEye {
 		return pixels;
 	}
 	
-	public TiledImage fixRedEyePixels(Inspiram inspiram, PlanarImage imageToFix) {
+	public TiledImage fixRedEyePixels(Inspiram inspiram, PlanarImage imageToFix, int centerEyeX, int centerEyeY) {
 		int width = imageToFix.getWidth();
 		int height = imageToFix.getHeight();
 		SampleModel mySampleModel = imageToFix.getSampleModel();
@@ -146,12 +146,14 @@ public class RedEye {
 				r = pixels[pixelIndex+0];
 				g = pixels[pixelIndex+1];
 				b = pixels[pixelIndex+2];
-				if(isRedEyeValues(r, g, b)) {
-					pixels[pixelIndex+(0)] = 0;
-					pixels[pixelIndex+(1)] = 10;
-					pixels[pixelIndex+(2)] = 10;
-//					pixels = -antiAliasRedEye(pixels, pixelIndex, x, y, width, nbands);
-					pixels = antiAlias(pixels, (int)y, width, nbands, (int)x);
+				if(isWithinUserCircle(centerEyeX, centerEyeY, inspiram.redEyeDiameter, x, y)) {
+					if(isRedEyeValues(r, g, b)) {
+						pixels[pixelIndex+(0)] = 0;
+						pixels[pixelIndex+(1)] = 10;
+						pixels[pixelIndex+(2)] = 10;
+	//					pixels = -antiAliasRedEye(pixels, pixelIndex, x, y, width, nbands);
+						pixels = antiAlias(pixels, (int)y, width, nbands, (int)x);
+					}
 				}
 			}
 		}
@@ -160,6 +162,22 @@ public class RedEye {
 		ti.setData(writableRaster);
 		inspiram.repaintEverything();
 		return ti;
+	}
+	
+	public boolean isWithinUserCircle(int centerEyeX, int centerEyeY, int redEyeDiameter, int xCheck, int yCheck) {
+		boolean isWithinCircle = false;
+		
+		int distance = (int) Math.sqrt((xCheck - centerEyeX) * (xCheck - centerEyeX) + (yCheck - centerEyeY) * (yCheck - centerEyeY));
+		int radius = redEyeDiameter/2;
+		
+		if(distance > radius) {
+			isWithinCircle = false;
+		} 
+		else {
+			isWithinCircle = true;
+		}
+		
+		return isWithinCircle;
 	}
 	
 	public int[] antiAliasRedEye(int[] pixels, int index, int currentX, int currentY, int currentWidth, int currentBands) {
@@ -246,7 +264,7 @@ public class RedEye {
 					if(averageGrayscale < 230 && averageGrayscale > 25) {
 //						if(g-b < 75) {
 							if(g < r && b < r) {
-								if(pixelRedRatio >= 1.5) { //A good value here is 1.67
+								if(pixelRedRatio >= 1.4) { //A good value here is 1.67
 									isRedEyeValue = true;
 								}
 							}
@@ -291,7 +309,7 @@ public class RedEye {
 		System.out.println("created the mouse listener for red eye.");
 	}
 	
-	public void defineEyeSize(int centerEyeX, int centerEyeY, final Inspiram inspiram, PlanarImage imageToFix) {
+	public void defineEyeSize(final int centerEyeX, final int centerEyeY, final Inspiram inspiram, PlanarImage imageToFix) {
 		inspiram.sliderFrame = new JFrame("Slide the slider to fit over the iris in a red eye.");
 		inspiram.sliderFrame.setLayout(new BorderLayout());
 		inspiram.radiusSlider = new JSlider(JSlider.HORIZONTAL);
@@ -340,7 +358,7 @@ public class RedEye {
 				for(MouseListener ml : inspiram.layersHolder.getMouseListeners()) {
 					inspiram.layersHolder.removeMouseListener(ml);
 				}
-				fixRedEye(inspiram);
+				fixRedEye(inspiram, centerEyeX, centerEyeY);
 			} 
 		});
 		//End of radius Listeners//
@@ -381,9 +399,9 @@ public class RedEye {
 	 * This method was used for manipulating pixels and further transformed into 
 	 * trying to fix the red eye problem.
 	 */
-	public void fixRedEye(Inspiram inspiram) {
+	public void fixRedEye(Inspiram inspiram, int centerEyeX, int centerEyeY) {
 		inspiram.sliderFrame.dispose();
-		TiledImage myTiledImage = fixRedEyePixels(inspiram, inspiram.layers[inspiram.currentLayer].getLayerImage());
+		TiledImage myTiledImage = fixRedEyePixels(inspiram, inspiram.layers[inspiram.currentLayer].getLayerImage(), centerEyeX, centerEyeY);
 		inspiram.layers[inspiram.currentLayer].setLayerImage(inspiram.tiledImageToPlanarImage(myTiledImage));
 //		inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
 		inspiram.layers[inspiram.currentLayer].setPlainImage();

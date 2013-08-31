@@ -35,14 +35,10 @@ public class Layer extends DisplayJAI {
 	public JLabel getImageDisplay() {
 		return imageDisplay;
 	}
-
-
-
+	
 	public void setImageDisplay(JLabel imageDisplay) {
 		this.imageDisplay = imageDisplay;
 	}
-
-
 
 	public void setPlainImage() {
 		plainImage = layerImage.getAsBufferedImage();
@@ -67,7 +63,6 @@ public class Layer extends DisplayJAI {
 	}
 
 	public void setLayerImage(PlanarImage layerImage) {
-		System.out.println("SETTING LAYER IMAGE: " + layerImage.getWidth() + ", " + layerImage.getHeight());
 		this.layerImage = layerImage;
 	}
 
