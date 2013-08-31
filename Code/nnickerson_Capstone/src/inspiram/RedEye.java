@@ -264,7 +264,7 @@ public class RedEye {
 					if(averageGrayscale < 230 && averageGrayscale > 25) {
 //						if(g-b < 75) {
 							if(g < r && b < r) {
-								if(pixelRedRatio >= 1.4) { //A good value here is 1.67
+								if(pixelRedRatio >= 1.45) { //A good value here is 1.67
 									isRedEyeValue = true;
 								}
 							}
@@ -370,6 +370,8 @@ public class RedEye {
 //	    redEyeCircle.setStroke(new BasicStroke());
 		int previousCenterX = inspiram.redEyeCenterX;
 		int previousCenterY = inspiram.redEyeCenterY;
+		inspiram.redEyeCircle.drawOval(inspiram.redEyeCenterX-((inspiram.redEyeDiameter/2))-2, (inspiram.redEyeCenterY-(inspiram.redEyeDiameter/2))-2, inspiram.redEyeDiameter+2, inspiram.redEyeDiameter+2);
+		inspiram.redEyeCircle.drawOval(inspiram.redEyeCenterX-((inspiram.redEyeDiameter/2))-1, (inspiram.redEyeCenterY-(inspiram.redEyeDiameter/2))-2, inspiram.redEyeDiameter+1, inspiram.redEyeDiameter+1);
 	    inspiram.redEyeCircle.drawOval(inspiram.redEyeCenterX-(inspiram.redEyeDiameter/2), inspiram.redEyeCenterY-(inspiram.redEyeDiameter/2), inspiram.redEyeDiameter, inspiram.redEyeDiameter);
 //	    redEyeCircle.setPaint(Color.green);
 	    inspiram.redEyeCenterX = previousCenterX;
