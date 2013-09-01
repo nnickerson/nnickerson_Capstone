@@ -37,12 +37,24 @@ public class RedEye {
 		
 	}
 	
-	public int[] antiAlias(int[] pixels, int y, int width, int nbands, int x) {
+	public int[] antiAlias(int[] pixels, int y, int width, int nbands, int x, int redEyeDiameter, int circleX, int circleY) {
 		int pixelIndex = (int)y * width * nbands + (int)x * nbands;
 		int east3 = (int)y * width * nbands + ((int)(x+3)) * nbands;
 		int west3 = (int)y * width * nbands + ((int)(x-3)) * nbands;
 		int north3 = ((int)(y-3)) * width * nbands + ((int)(x+0)) * nbands;
 		int south3 = ((int)(y+3)) * width * nbands + ((int)(x+0)) * nbands;
+		int ne3 = ((int)(y-3)) * width * nbands + ((int)(x+3)) * nbands;
+		int nw3 = ((int)(y-3)) * width * nbands + ((int)(x-3)) * nbands;
+		int sw3 = ((int)(y+3)) * width * nbands + ((int)(x-3)) * nbands;
+		int se3 = ((int)(y+3)) * width * nbands + ((int)(x+3)) * nbands;
+		int ne2 = ((int)(y-2)) * width * nbands + ((int)(x+2)) * nbands;
+		int nw2 = ((int)(y-2)) * width * nbands + ((int)(x-2)) * nbands;
+		int sw2 = ((int)(y+2)) * width * nbands + ((int)(x-2)) * nbands;
+		int se2 = ((int)(y+2)) * width * nbands + ((int)(x+2)) * nbands;
+		int ne1 = ((int)(y-1)) * width * nbands + ((int)(x+1)) * nbands;
+		int nw1 = ((int)(y-1)) * width * nbands + ((int)(x-1)) * nbands;
+		int sw1 = ((int)(y+1)) * width * nbands + ((int)(x-1)) * nbands;
+		int se1 = ((int)(y+1)) * width * nbands + ((int)(x+1)) * nbands;
 		int east1 = (int)y * width * nbands + ((int)(x+1)) * nbands;
 		int west1 = (int)y * width * nbands + ((int)(x-1)) * nbands;
 		int north1 = ((int)(y-1)) * width * nbands + ((int)(x+0)) * nbands;
@@ -62,14 +74,89 @@ public class RedEye {
 		int differenceR = currentR-east3R;
 		int differenceG = currentG-east3G;
 		int differenceB = currentB-east3B;
-		pixels[(east1)+0] = ((differenceR/3)*2)+east3R;
-		pixels[(east1)+1] = ((differenceG/3)*2)+east3G;
-		pixels[(east1)+2] = ((differenceB/3)*2)+east3B;
-		pixels[(east2)+0] = ((differenceR/3))+east3R;
-		pixels[(east2)+1] = ((differenceG/3))+east3G;
-		pixels[(east2)+2] = ((differenceB/3))+east3B;
+		if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x+1, y)) {
+			pixels[(east1)+0] = ((differenceR/3)*2)+east3R;
+			pixels[(east1)+1] = ((differenceG/3)*2)+east3G;
+			pixels[(east1)+2] = ((differenceB/3)*2)+east3B;
+		}
+		if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x+2, y)) {
+			pixels[(east2)+0] = ((differenceR/3))+east3R;
+			pixels[(east2)+1] = ((differenceG/3))+east3G;
+			pixels[(east2)+2] = ((differenceB/3))+east3B;
+		}
 		
-		
+		//SouthEast//
+				int se3R = pixels[(se3)+0];
+				int se3G = pixels[(se3)+1];
+				int se3B = pixels[(se3)+2];
+				differenceR = currentR-se3R;
+				differenceG = currentG-se3G;
+				differenceB = currentB-se3B;
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x+1, y+1)) {
+					pixels[(se1)+0] = ((differenceR/3)*2)+se3R;
+					pixels[(se1)+1] = ((differenceG/3)*2)+se3G;
+					pixels[(se1)+2] = ((differenceB/3)*2)+se3B;
+				}
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x+2, y+2)) {
+					pixels[(se2)+0] = ((differenceR/3))+se3R;
+					pixels[(se2)+1] = ((differenceG/3))+se3G;
+					pixels[(se2)+2] = ((differenceB/3))+se3B;
+				}
+				
+				
+				//NorthEast//
+				int ne3R = pixels[(ne3)+0];
+				int ne3G = pixels[(ne3)+1];
+				int ne3B = pixels[(ne3)+2];
+				differenceR = currentR-ne3R;
+				differenceG = currentG-ne3G;
+				differenceB = currentB-ne3B;
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x+1, y-1)) {
+					pixels[(ne1)+0] = ((differenceR/3)*2)+ne3R;
+					pixels[(ne1)+1] = ((differenceG/3)*2)+ne3G;
+					pixels[(ne1)+2] = ((differenceB/3)*2)+ne3B;
+				}
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x+2, y-2)) {
+					pixels[(ne2)+0] = ((differenceR/3))+ne3R;
+					pixels[(ne2)+1] = ((differenceG/3))+ne3G;
+					pixels[(ne2)+2] = ((differenceB/3))+ne3B;
+				}
+				
+				//SouthWest//
+				int sw3R = pixels[(sw3)+0];
+				int sw3G = pixels[(sw3)+1];
+				int sw3B = pixels[(sw3)+2];
+				differenceR = currentR-sw3R;
+				differenceG = currentG-sw3G;
+				differenceB = currentB-sw3B;
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x-1, y+1)) {
+					pixels[(sw1)+0] = ((differenceR/3)*2)+sw3R;
+					pixels[(sw1)+1] = ((differenceG/3)*2)+sw3G;
+					pixels[(sw1)+2] = ((differenceB/3)*2)+sw3B;
+				}
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x-2, y+2)) {
+					pixels[(sw2)+0] = ((differenceR/3))+sw3R;
+					pixels[(sw2)+1] = ((differenceG/3))+sw3G;
+					pixels[(sw2)+2] = ((differenceB/3))+sw3B;
+				}
+				
+				//NorthWest//
+				int nw3R = pixels[(nw3)+0];
+				int nw3G = pixels[(nw3)+1];
+				int nw3B = pixels[(nw3)+2];
+				differenceR = currentR-nw3R;
+				differenceG = currentG-nw3G;
+				differenceB = currentB-nw3B;
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x-1, y-1)) {
+					pixels[(nw1)+0] = ((differenceR/3)*2)+nw3R;
+					pixels[(nw1)+1] = ((differenceG/3)*2)+nw3G;
+					pixels[(nw1)+2] = ((differenceB/3)*2)+nw3B;
+				}
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x-2, y-2)) {
+					pixels[(nw2)+0] = ((differenceR/3))+nw3R;
+					pixels[(nw2)+1] = ((differenceG/3))+nw3G;
+					pixels[(nw2)+2] = ((differenceB/3))+nw3B;
+				}
 		
 		//West/
 				int west3R = pixels[(west3)+0];
@@ -78,12 +165,16 @@ public class RedEye {
 				differenceR = currentR-west3R;
 				differenceG = currentG-west3G;
 				differenceB = currentB-west3B;
-				pixels[(west1)+0] = ((differenceR/3)*2)+west3R;
-				pixels[(west1)+1] = ((differenceG/3)*2)+west3G;
-				pixels[(west1)+2] = ((differenceB/3)*2)+west3B;
-				pixels[(west2)+0] = ((differenceR/3))+west3R;
-				pixels[(west2)+1] = ((differenceG/3))+west3G;
-				pixels[(west2)+2] = ((differenceB/3))+west3B;
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x-1, y)) {
+					pixels[(west1)+0] = ((differenceR/3)*2)+west3R;
+					pixels[(west1)+1] = ((differenceG/3)*2)+west3G;
+					pixels[(west1)+2] = ((differenceB/3)*2)+west3B;
+				}
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x-2, y)) {
+					pixels[(west2)+0] = ((differenceR/3))+west3R;
+					pixels[(west2)+1] = ((differenceG/3))+west3G;
+					pixels[(west2)+2] = ((differenceB/3))+west3B;
+				}
 				
 				//South//
 				int south3R = pixels[(south3)+0];
@@ -92,12 +183,16 @@ public class RedEye {
 				differenceR = currentR-south3R;
 				differenceG = currentG-south3G;
 				differenceB = currentB-south3B;
-				pixels[(south1)+0] = ((differenceR/3)*2)+south3R;
-				pixels[(south1)+1] = ((differenceG/3)*2)+south3G;
-				pixels[(south1)+2] = ((differenceB/3)*2)+south3B;
-				pixels[(south2)+0] = ((differenceR/3))+south3R;
-				pixels[(south2)+1] = ((differenceG/3))+south3G;
-				pixels[(south2)+2] = ((differenceB/3))+south3B;
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x, y+1)) {
+					pixels[(south1)+0] = ((differenceR/3)*2)+south3R;
+					pixels[(south1)+1] = ((differenceG/3)*2)+south3G;
+					pixels[(south1)+2] = ((differenceB/3)*2)+south3B;
+				}
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x, y+2)) {
+					pixels[(south2)+0] = ((differenceR/3))+south3R;
+					pixels[(south2)+1] = ((differenceG/3))+south3G;
+					pixels[(south2)+2] = ((differenceB/3))+south3B;
+				}
 				
 				//North//
 				int north3R = pixels[(north3)+0];
@@ -106,12 +201,16 @@ public class RedEye {
 				differenceR = currentR-north3R;
 				differenceG = currentG-north3G;
 				differenceB = currentB-north3B;
-				pixels[(north1)+0] = ((differenceR/3)*2)+north3R;
-				pixels[(north1)+1] = ((differenceG/3)*2)+north3G;
-				pixels[(north1)+2] = ((differenceB/3)*2)+north3B;
-				pixels[(north2)+0] = ((differenceR/3))+north3R;
-				pixels[(north2)+1] = ((differenceG/3))+north3G;
-				pixels[(north2)+2] = ((differenceB/3))+north3B;
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x, y-1)) {
+					pixels[(north1)+0] = ((differenceR/3)*2)+north3R;
+					pixels[(north1)+1] = ((differenceG/3)*2)+north3G;
+					pixels[(north1)+2] = ((differenceB/3)*2)+north3B;
+				}
+				if(isWithinUserCircle(circleX, circleY, redEyeDiameter, x, y-2)) {
+					pixels[(north2)+0] = ((differenceR/3))+north3R;
+					pixels[(north2)+1] = ((differenceG/3))+north3G;
+					pixels[(north2)+2] = ((differenceB/3))+north3B;
+				}
 		
 		
 		return pixels;
@@ -158,7 +257,7 @@ public class RedEye {
 						pixels[pixelIndex+(1)] = gValue;
 						pixels[pixelIndex+(2)] = bValue;
 	//					pixels = -antiAliasRedEye(pixels, pixelIndex, x, y, width, nbands);
-						pixels = antiAlias(pixels, (int)y, width, nbands, (int)x);
+						pixels = antiAlias(pixels, (int)y, width, nbands, (int)x, inspiram.redEyeDiameter, centerEyeX, centerEyeY);
 					}
 				}
 			}
@@ -186,7 +285,7 @@ public class RedEye {
 		return isWithinCircle;
 	}
 	
-	public int[] antiAliasRedEye(int[] pixels, int index, int currentX, int currentY, int currentWidth, int currentBands) {
+	public int[] antiAliasRedEye(int[] pixels, int index, int currentX, int currentY, int currentWidth, int currentBands, int centerCircleX, int centerCircleY, int redEyeDiameter) {
 		int currentPixelIndex = currentY*currentWidth*currentBands+currentX*currentBands;
 		int northWestPixelIndex = ((currentY)-1)*currentWidth*currentBands+((currentX)-1)*currentBands;
 		int northPixelIndex = ((currentY)-1)*currentWidth*currentBands+((currentX))*currentBands;
@@ -194,27 +293,35 @@ public class RedEye {
 		int westPixelIndex = ((currentY))*currentWidth*currentBands+((currentX)-1)*currentBands;
 		
 		//NorthWest Check//
-		pixels[northWestPixelIndex+RED_BAND] = medianChange(pixels[currentPixelIndex+RED_BAND], pixels[northWestPixelIndex+RED_BAND]);
-		pixels[northWestPixelIndex+GREEN_BAND] = medianChange(pixels[currentPixelIndex+GREEN_BAND], pixels[northWestPixelIndex+GREEN_BAND]);
-		pixels[northWestPixelIndex+BLUE_BAND] = medianChange(pixels[currentPixelIndex+BLUE_BAND], pixels[northWestPixelIndex+BLUE_BAND]);
+		if(isWithinUserCircle(centerCircleX, centerCircleY, redEyeDiameter, currentX-1, currentY-1)) {
+			pixels[northWestPixelIndex+RED_BAND] = medianChange(pixels[currentPixelIndex+RED_BAND], pixels[northWestPixelIndex+RED_BAND]);
+			pixels[northWestPixelIndex+GREEN_BAND] = medianChange(pixels[currentPixelIndex+GREEN_BAND], pixels[northWestPixelIndex+GREEN_BAND]);
+			pixels[northWestPixelIndex+BLUE_BAND] = medianChange(pixels[currentPixelIndex+BLUE_BAND], pixels[northWestPixelIndex+BLUE_BAND]);
+		}
 		//End of NorthWest Check//
 		
 		//North Check//
-		pixels[northPixelIndex+RED_BAND] = medianChange(pixels[currentPixelIndex+RED_BAND], pixels[northPixelIndex+RED_BAND]);
-		pixels[northPixelIndex+GREEN_BAND] = medianChange(pixels[currentPixelIndex+GREEN_BAND], pixels[northPixelIndex+GREEN_BAND]);
-		pixels[northPixelIndex+BLUE_BAND] = medianChange(pixels[currentPixelIndex+BLUE_BAND], pixels[northPixelIndex+BLUE_BAND]);
+		if(isWithinUserCircle(centerCircleX, centerCircleY, redEyeDiameter, currentX, currentY-1)) {
+			pixels[northPixelIndex+RED_BAND] = medianChange(pixels[currentPixelIndex+RED_BAND], pixels[northPixelIndex+RED_BAND]);
+			pixels[northPixelIndex+GREEN_BAND] = medianChange(pixels[currentPixelIndex+GREEN_BAND], pixels[northPixelIndex+GREEN_BAND]);
+			pixels[northPixelIndex+BLUE_BAND] = medianChange(pixels[currentPixelIndex+BLUE_BAND], pixels[northPixelIndex+BLUE_BAND]);
+		}
 		//End of North Check//
 		
 		//NorthEast Check//
-		pixels[northEastPixelIndex+RED_BAND] = medianChange(pixels[currentPixelIndex+RED_BAND], pixels[northEastPixelIndex+RED_BAND]);
-		pixels[northEastPixelIndex+GREEN_BAND] = medianChange(pixels[currentPixelIndex+GREEN_BAND], pixels[northEastPixelIndex+GREEN_BAND]);
-		pixels[northEastPixelIndex+BLUE_BAND] = medianChange(pixels[currentPixelIndex+BLUE_BAND], pixels[northEastPixelIndex+BLUE_BAND]);
+		if(isWithinUserCircle(centerCircleX, centerCircleY, redEyeDiameter, currentX+1, currentY-1)) {
+			pixels[northEastPixelIndex+RED_BAND] = medianChange(pixels[currentPixelIndex+RED_BAND], pixels[northEastPixelIndex+RED_BAND]);
+			pixels[northEastPixelIndex+GREEN_BAND] = medianChange(pixels[currentPixelIndex+GREEN_BAND], pixels[northEastPixelIndex+GREEN_BAND]);
+			pixels[northEastPixelIndex+BLUE_BAND] = medianChange(pixels[currentPixelIndex+BLUE_BAND], pixels[northEastPixelIndex+BLUE_BAND]);
+		}
 		//End of NorthEast Check//
 		
 		//West Check//
-		pixels[westPixelIndex+RED_BAND] = medianChange(pixels[currentPixelIndex+RED_BAND], pixels[westPixelIndex+RED_BAND]);
-		pixels[westPixelIndex+GREEN_BAND] = medianChange(pixels[currentPixelIndex+GREEN_BAND], pixels[westPixelIndex+GREEN_BAND]);
-		pixels[westPixelIndex+BLUE_BAND] = medianChange(pixels[currentPixelIndex+BLUE_BAND], pixels[westPixelIndex+BLUE_BAND]);
+		if(isWithinUserCircle(centerCircleX, centerCircleY, redEyeDiameter, currentX-1, currentY)) {
+			pixels[westPixelIndex+RED_BAND] = medianChange(pixels[currentPixelIndex+RED_BAND], pixels[westPixelIndex+RED_BAND]);
+			pixels[westPixelIndex+GREEN_BAND] = medianChange(pixels[currentPixelIndex+GREEN_BAND], pixels[westPixelIndex+GREEN_BAND]);
+			pixels[westPixelIndex+BLUE_BAND] = medianChange(pixels[currentPixelIndex+BLUE_BAND], pixels[westPixelIndex+BLUE_BAND]);
+		}
 		//West of North Check//
 		
 		for(int i = 0; i < 3; i++) {
@@ -266,11 +373,11 @@ public class RedEye {
 		int averageGrayscale = (r+g+b)/3;
 //		if(hue >= .65 && hue <= 1.25) {
 //			if(saturation > .43) {
-				if(brightness > .05 && brightness < .95) {
+				if(brightness > .1 && brightness < .95) {
 					if(averageGrayscale < 230 && averageGrayscale > 25) {
 //						if(g-b < 75) {
 							if(g < r && b < r) {
-								if(pixelRedRatio >= 1.5) { //A good value here is 1.67
+								if(pixelRedRatio >= 1.55) { //A good value here is 1.67
 									isRedEyeValue = true;
 								}
 							}
