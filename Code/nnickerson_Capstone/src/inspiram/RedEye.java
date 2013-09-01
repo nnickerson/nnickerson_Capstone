@@ -15,7 +15,9 @@ import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
@@ -26,6 +28,10 @@ public class RedEye {
 	private int RED_BAND = 0;
 	private int GREEN_BAND = 1;
 	private int BLUE_BAND = 2;
+	public int rValue = 0;
+	public int gValue = 0;
+	public int bValue = 0;
+	JColorChooser colorChooser;
 
 	public RedEye() {
 		
@@ -148,9 +154,9 @@ public class RedEye {
 				b = pixels[pixelIndex+2];
 				if(isWithinUserCircle(centerEyeX, centerEyeY, inspiram.redEyeDiameter, x, y)) {
 					if(isRedEyeValues(r, g, b)) {
-						pixels[pixelIndex+(0)] = 0;
-						pixels[pixelIndex+(1)] = 10;
-						pixels[pixelIndex+(2)] = 10;
+						pixels[pixelIndex+(0)] = rValue;
+						pixels[pixelIndex+(1)] = gValue;
+						pixels[pixelIndex+(2)] = bValue;
 	//					pixels = -antiAliasRedEye(pixels, pixelIndex, x, y, width, nbands);
 						pixels = antiAlias(pixels, (int)y, width, nbands, (int)x);
 					}
@@ -260,17 +266,17 @@ public class RedEye {
 		int averageGrayscale = (r+g+b)/3;
 //		if(hue >= .65 && hue <= 1.25) {
 //			if(saturation > .43) {
-//				if(brightness > .05 && brightness < .95) {
+				if(brightness > .05 && brightness < .95) {
 					if(averageGrayscale < 230 && averageGrayscale > 25) {
 //						if(g-b < 75) {
 							if(g < r && b < r) {
-								if(pixelRedRatio >= 1.45) { //A good value here is 1.67
+								if(pixelRedRatio >= 1.5) { //A good value here is 1.67
 									isRedEyeValue = true;
 								}
 							}
 //						}
 					}
-//				}
+				}
 //			}
 //		}
 		return isRedEyeValue;
@@ -311,14 +317,22 @@ public class RedEye {
 	
 	public void defineEyeSize(final int centerEyeX, final int centerEyeY, final Inspiram inspiram, PlanarImage imageToFix) {
 		inspiram.sliderFrame = new JFrame("Slide the slider to fit over the iris in a red eye.");
+		JLabel colorChooserLabel = new JLabel("Choose Red Eye Color:");
+		colorChooser = new JColorChooser();
+		colorChooserLabel.setSize(500, 500);
+		inspiram.sliderFrame.repaint();
+		colorChooser.repaint();
+		colorChooser.setVisible(true);
+//		colorChooser.setSize(inspiram.sliderFrame.getWidth(), inspiram.radiusSlider.getHeight());
 		inspiram.sliderFrame.setLayout(new BorderLayout());
+		inspiram.sliderFrame.add(colorChooser, BorderLayout.NORTH);
 		inspiram.radiusSlider = new JSlider(JSlider.HORIZONTAL);
 		JButton fixRedEyeButton = new JButton("Fix it!");
-		inspiram.sliderFrame.add(fixRedEyeButton, BorderLayout.PAGE_END);
+		inspiram.sliderFrame.add(fixRedEyeButton, BorderLayout.SOUTH);
 		fixRedEyeButton.setVisible(true);
 		fixRedEyeButton.repaint();
 		inspiram.sliderFrame.repaint();
-		inspiram.sliderFrame.add(inspiram.radiusSlider, BorderLayout.PAGE_START);
+		inspiram.sliderFrame.add(inspiram.radiusSlider, BorderLayout.CENTER);
 		inspiram.radiusSlider.setMinimum(2);
 		inspiram.radiusSlider.setMaximum((int)((double)(inspiram.rHeight)*.9));
 		if(imageToFix.getWidth() >= imageToFix.getHeight()) {
@@ -327,7 +341,7 @@ public class RedEye {
 		else {
 			inspiram.radiusSlider.setMaximum(imageToFix.getWidth()-1);
 		}
-		inspiram.sliderFrame.setSize(400, 110);
+		inspiram.sliderFrame.setSize(620, 450);
 		inspiram.sliderFrame.setVisible(true);
 		inspiram.sliderFrame.repaint();
 		inspiram.radiusSlider.setBorder(BorderFactory.createBevelBorder(2));
@@ -358,6 +372,9 @@ public class RedEye {
 				for(MouseListener ml : inspiram.layersHolder.getMouseListeners()) {
 					inspiram.layersHolder.removeMouseListener(ml);
 				}
+				rValue = colorChooser.getColor().getRed();
+				gValue = colorChooser.getColor().getGreen();
+				bValue = colorChooser.getColor().getBlue();
 				fixRedEye(inspiram, centerEyeX, centerEyeY);
 			} 
 		});
