@@ -242,9 +242,9 @@ public class Inspiram extends JApplet {
 				
 				if(!isPixelBlack(r, g, b)) {
 					int actualPixelIndex = ((int)y) * layers[currentLayer].getLayerImage().getWidth() * nbands + ((int)x) * nbands;
-					pixelHistory.setPrevR(pixels[textImagePixelIndex + pixelHistory.R_BAND]);
-					pixelHistory.setPrevG(pixels[textImagePixelIndex + pixelHistory.G_BAND]);
-					pixelHistory.setPrevB(pixels[textImagePixelIndex + pixelHistory.B_BAND]);
+					pixelHistory.setPrevR(actualPixels[textImagePixelIndex + pixelHistory.R_BAND]);
+					pixelHistory.setPrevG(actualPixels[textImagePixelIndex + pixelHistory.G_BAND]);
+					pixelHistory.setPrevB(actualPixels[textImagePixelIndex + pixelHistory.B_BAND]);
 					pixelHistory.setNewR(0);
 					pixelHistory.setNewG(0);
 					pixelHistory.setNewB(0);

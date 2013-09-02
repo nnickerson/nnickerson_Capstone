@@ -41,20 +41,10 @@ public class Change extends JMenu {
 					Change parentMenu = (Change)popupMenu.getInvoker();
 					System.out.println("Undoing image from history!");
 						
-						inspiram.loadedImage = parentMenu.revertChange(inspiram.loadedImage);
-						
-						inspiram.displayJAIimage = null;
-						inspiram.removeOldComponents();
-						inspiram.displayJAIimage = new DisplayJAI(inspiram.loadedImage);
-						inspiram.layersHolder.add(inspiram.displayJAIimage);
-	
-	
-						inspiram.getContentPane().repaint();
-						inspiram.setSize(inspiram.getWidth() - 1, inspiram.getHeight() - 1);
-						inspiram.setSize(inspiram.getWidth() + 1, inspiram.getHeight() + 1);
-						inspiram.repaint();
-						inspiram.repaint();
-						repaint();
+						inspiram.layers[inspiram.currentLayer].setLayerImage(parentMenu.revertChange(inspiram.layers[inspiram.currentLayer].getLayerImage()));
+						inspiram.layers[inspiram.currentLayer].setPlainImage();
+						inspiram.layers[inspiram.currentLayer].add(inspiram.layers[inspiram.currentLayer].getImageDisplay());
+						inspiram.repaintEverything();
 			}
 		};
 		return changeUndoListener;

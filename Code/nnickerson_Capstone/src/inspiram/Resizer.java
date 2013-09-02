@@ -36,7 +36,7 @@ public class Resizer {
 //		ti.setData(writableRaster);
 //		newImage = ti.createSnapshot();
 		System.out.println("RESIZER: " + newWidth);
-		Image ni = originalImage.getAsBufferedImage().getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+		Image ni = originalImage.getAsBufferedImage().getScaledInstance(newWidth, newHeight, Image.SCALE_REPLICATE);
 		PlanarImage nii = texter.getPlanarImageFromImage(ni);
 		return nii;
 	}
