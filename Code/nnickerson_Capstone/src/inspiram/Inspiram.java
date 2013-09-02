@@ -138,16 +138,7 @@ public class Inspiram extends JApplet {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("RESIZE YOUR IMAGE");
-				int[] widthAndHeightAndScale = getNewImageSize();
-				Text texter = new Text();
-				
-				layers[currentLayer].setLayerImage(texter.getPlanarImageFromImage(layers[currentLayer].getPlainImage()));
-				System.out.println("THE LAYRE IMAGE: " + layers[currentLayer].getLayerImage());
-				layers[currentLayer].setLayerImage(Resizer.resizeImage(layers[currentLayer].getLayerImage(),widthAndHeightAndScale[0],widthAndHeightAndScale[1],widthAndHeightAndScale[2]));
-				System.out.println("THE LAYRE IMAGE: " + layers[currentLayer].getLayerImage());
-				layers[currentLayer].setPlainImage();
-				layers[currentLayer].setSize(widthAndHeightAndScale[0], widthAndHeightAndScale[1]);
+				getNewImageSize();				
 			}
 		});
 	    
@@ -155,13 +146,8 @@ public class Inspiram extends JApplet {
 	    repaint();
 	}
 	
-	public int[] getNewImageSize() {
-		ResizerSlider rs = new ResizerSlider(layers[currentLayer].getWidth(), layers[currentLayer].getHeight());
-		int[] widthAndHeightAndScale = new int[3];
-		widthAndHeightAndScale[0] = rs.currentWidth;
-		widthAndHeightAndScale[1] = rs.currentHeight;
-		widthAndHeightAndScale[2] = rs.percent;
-		return widthAndHeightAndScale;
+	public void getNewImageSize() {
+		ResizerSlider rs = new ResizerSlider(layers[currentLayer].getWidth(), layers[currentLayer].getHeight(), this);
 	}
 	
 	public void addImageLoadMenu() {

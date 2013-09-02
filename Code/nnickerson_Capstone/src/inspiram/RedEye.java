@@ -140,7 +140,7 @@ public class RedEye {
 					pixels[(sw2)+2] = ((differenceB/3))+sw3B;
 				}
 				
-				//NorthWest//
+				//NrthWest//
 				int nw3R = pixels[(nw3)+0];
 				int nw3G = pixels[(nw3)+1];
 				int nw3B = pixels[(nw3)+2];
