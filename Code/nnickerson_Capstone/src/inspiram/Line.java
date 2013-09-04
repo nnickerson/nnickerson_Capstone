@@ -154,7 +154,7 @@ public class Line {
 		double repeatingXs = Math.abs(slope);
 		double yPlus = 0;
 		
-		Change change = new Change("Line Creation");
+		Change change = new Change("Line Creation", inspiram.currentLayer);
 		change.undoChange.addActionListener(change.createChangeUndoListener(inspiram));
 		System.out.println("SLOPE: " + slope);
 //		int minimalWhite = 0;
@@ -189,7 +189,7 @@ public class Line {
 //					pixels[(aaIndexRight) + (1)] = 170;
 //					pixels[(aaIndexRight) + (2)] = 34;
 //					System.out.println("HIT: " + x);
-					pixels = antiAlias(pixels, (int)y, width, nbands, (int)x, change);
+					pixels = antiAlias(pixels, (int)y, width, nbands, (int)x, change, inspiram.currentLayer);
 				}
 				pixelHistory.setPrevR(pixels[(pixelIndex - 0) + (0)]);
 				pixelHistory.setPrevG(pixels[(pixelIndex - 0) + (1)]);
@@ -204,7 +204,7 @@ public class Line {
 					if(!change.getAllPixelHistory().contains(pixelHistory.x) && !change.getAllPixelHistory().contains(pixelHistory.y)) {
 						change.getAllPixelHistory().add(pixelHistory);
 					}
-					pixels = antiAlias2(pixels, (int)y, width, nbands, (int)x, change);
+					pixels = antiAlias2(pixels, (int)y, width, nbands, (int)x, change, inspiram.currentLayer);
 		}
 		inspiram.inspiramHistory.addChange(change);
 		writableRaster.setPixels(0, 0, width, height, pixels);
@@ -213,7 +213,7 @@ public class Line {
 		return ti;
 	}
 	
-	public int[] antiAlias(int[] pixels, int y, int width, int nbands, int x, Change change) {
+	public int[] antiAlias(int[] pixels, int y, int width, int nbands, int x, Change change, int currentLayer) {
 		int pixelIndex = (int)y * width * nbands + (int)x * nbands;
 		int east3 = (int)y * width * nbands + ((int)(x+3)) * nbands;
 		int west3 = (int)y * width * nbands + ((int)(x-3)) * nbands;
@@ -372,7 +372,7 @@ public class Line {
 		return pixels;
 	}
 	
-	public int[] antiAlias2(int[] pixels, int y, int width, int nbands, int x, Change change) {
+	public int[] antiAlias2(int[] pixels, int y, int width, int nbands, int x, Change change, int currentLayer) {
 		int pixelIndex = (int)y * width * nbands + (int)x * nbands;
 		int east2 = (int)y * width * nbands + ((int)(x+2)) * nbands;
 		int west2 = (int)y * width * nbands + ((int)(x-2)) * nbands;

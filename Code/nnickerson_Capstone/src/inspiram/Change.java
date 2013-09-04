@@ -21,13 +21,15 @@ public class Change extends JMenu {
 	JMenuItem undoChange = new JMenuItem();
 	String changeDescription = "";
 	List<PixelHistory> allPixelHistory = new ArrayList<PixelHistory>();
+	int layerNumChanged = -1;
 	Change thisChange = this;
 
-	public Change(String description) {
+	public Change(String description, int layerNumChanged) {
 		changeDescription = description;
 		this.setText(description);
 		undoChange.setText("Undo");
 		this.add(undoChange);
+		this.layerNumChanged = layerNumChanged;
 	}
 	
 	public ActionListener createChangeUndoListener(final Inspiram inspiram) {
@@ -41,10 +43,10 @@ public class Change extends JMenu {
 					JPopupMenu popupMenu = (JPopupMenu)chosenMenuItem.getParent();
 					Change parentMenu = (Change)popupMenu.getInvoker();
 					System.out.println("Undoing image from history!");
-						
-						inspiram.layers[inspiram.currentLayer].setLayerImage(parentMenu.revertChange(inspiram.layers[inspiram.currentLayer].getLayerImage()));
-						inspiram.layers[inspiram.currentLayer].setPlainImage();
-						inspiram.layers[inspiram.currentLayer].add(inspiram.layers[inspiram.currentLayer].getImageDisplay());
+						System.out.println("NEGATIVE 1>>???: " + layerNumChanged);
+						inspiram.layers[layerNumChanged].setLayerImage(parentMenu.revertChange(inspiram.layers[layerNumChanged].getLayerImage()));
+						inspiram.layers[layerNumChanged].setPlainImage();
+						inspiram.layers[layerNumChanged].add(inspiram.layers[layerNumChanged].getImageDisplay());
 						inspiram.repaintEverything();
 						thisChange.removeAll();
 			}

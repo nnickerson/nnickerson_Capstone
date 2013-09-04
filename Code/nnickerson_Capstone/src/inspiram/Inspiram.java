@@ -216,7 +216,7 @@ public class Inspiram extends JApplet {
 		int xMax = myTextImage.getWidth();
 		int yMax = myTextImage.getHeight();
 		
-		Change change = new Change("Text Creation");
+		Change change = new Change("Text Creation", currentLayer);
 		change.undoChange.addActionListener(change.createChangeUndoListener(inspiramClass));
 		
 		for (int x = 0; x < xMax; x++) {
@@ -500,35 +500,36 @@ public class Inspiram extends JApplet {
 			public void actionPerformed(ActionEvent e) {
 				JButton layerButton = (JButton)e.getSource();
 				JPanel layerPanel = (JPanel)layerButton.getParent();
-				
+				JLabel layerNameLabel = (JLabel)layerPanel.getComponent(0);
+				System.out.println("LAYERLABEL: " + layerNameLabel.getName());
 				if(layerButton.getText().contains("up")) {
-					moveLayerUp(Integer.parseInt(layerButton.getName().split(" ")[1]));
-					System.out.println("Layer movement: " + layerButton.getName());
+					moveLayerUp(Integer.parseInt(layerPanel.getName()));
+					System.out.println("Layer movement: " + layerNameLabel.getName());
 				}
 				else if(layerButton.getText().contains("down")) {
-					moveLayerDown(Integer.parseInt(layerButton.getName().split(" ")[1]));
-					System.out.println("Layer movement: " + layerButton.getName());
+					moveLayerDown(Integer.parseInt(layerPanel.getName()));
+					System.out.println("Layer movement: " + layerNameLabel.getName());
 				}
 			}
 		};
 		//Ending button listeners setup//
 		
-		for(Layer layer : layers) {
+		for(int i = 0; i < layers.length; i++) {
 			JPanel newLayerPanel = new JPanel();
 			JButton upButton = new JButton();
 			JButton downButton = new JButton();
-			upButton.setText("Move " + layer.getLayerName() + " up");
-			downButton.setText("Move " + layer.getLayerName() + " down");
-			upButton.setName(layer.getLayerName() + " up");
-			downButton.setName(layer.getLayerName() + " down");
+			upButton.setText("Move " + layers[i].getLayerName() + " up");
+			downButton.setText("Move " + layers[i].getLayerName() + " down");
+			upButton.setName(layers[i].getLayerName() + " up");
+			downButton.setName(layers[i].getLayerName() + " down");
 			upButton.addActionListener(layerButtonsListener);
 			downButton.addActionListener(layerButtonsListener);
 			newLayerPanel.setLayout(new BorderLayout());
-			System.out.println(layer.getLayerName());
-			newLayerPanel.setName(layer.getLayerName());
-			JLabel layerLabel = new JLabel(layer.getLayerName());
-			layerLabel.setName(layer.getLayerName());
-			layerLabel.setText(layer.getLayerName());
+			System.out.println(layers[i].getLayerName());
+			JLabel layerLabel = new JLabel(layers[i].getLayerName());
+			layerLabel.setName(layers[i].getLayerName());
+			layerLabel.setText(layers[i].getLayerName());
+			newLayerPanel.setName("" + i);
 			newLayerPanel.add(layerLabel, BorderLayout.EAST);
 			newLayerPanel.add(upButton, BorderLayout.NORTH);
 			newLayerPanel.add(downButton, BorderLayout.SOUTH);
@@ -541,7 +542,7 @@ public class Inspiram extends JApplet {
 				@Override
 				public void mousePressed(MouseEvent e) {
 					JPanel layerPanel = (JPanel)e.getSource();
-					currentLayer = (Integer.parseInt(layerPanel.getName().split(" ")[1]));
+					currentLayer = (Integer.parseInt(layerPanel.getName()));
 					System.out.println("Current Layer: " + currentLayer);
 					for(Component c : layersPanel.getComponents()) {
 						c.setBackground(Color.LIGHT_GRAY);
@@ -727,19 +728,18 @@ public class Inspiram extends JApplet {
 		for(int i = 0; i < layersPanel.getComponentCount(); i++) {
 			JPanel layerToChange = null;
 			layerToChange = (JPanel)layersPanel.getComponent(i);
-			layerToChange.setName("Layer " + i);
+			layerToChange.setName("" + i);
 			JButton upButton = (JButton)layerToChange.getComponent(1);
-			upButton.setText("Layer " + i + " up");
-			upButton.setName("Layer " + i + " up");
+			upButton.setText("Layer up");
+			upButton.setName("Layer up");
 			
 			JButton downButton = (JButton)layerToChange.getComponent(2);
-			downButton.setText("Layer " + i + " down");
-			downButton.setName("Layer " + i + " down");
+			downButton.setText("Layer down");
+			downButton.setName("Layer down");
 		}
 		for(int i = 0; i < layers.length; i++) {
 			Layer layerToChange = null;
 			layerToChange = layers[i];
-			layerToChange.setLayerName("Layer " + i);
 			layerToChange.setLayerID(i);
 			layers[i] = layerToChange;
 		}
