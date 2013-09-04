@@ -30,7 +30,7 @@ public class ImageSaver {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ImageSaver imageSaver = new ImageSaver();
-				imageSaver.saveImageAsPNG(inspiram.loadedImage, false, "");
+				imageSaver.saveImageAsPNG(inspiram, false, "");
 			}
 		};
 		
@@ -44,7 +44,7 @@ public class ImageSaver {
 	 * Leave the fileName as "" unless you put creatingDirectory to true for some reason.
 	 * @param imageToSave
 	 */
-	public void saveImageAsPNG(PlanarImage imageToSave, boolean creatingDirectory, String fileNameParam) {
+	public void saveImageAsPNG(Inspiram ins, boolean creatingDirectory, String fileNameParam) {
 		String fileName = "";
 		
 		if(!creatingDirectory) {
@@ -53,6 +53,8 @@ public class ImageSaver {
 		else {
 			fileName = fileNameParam;
 		}
+		
+		PlanarImage imageToSave = mergeAllLayers(ins);
 		
 		BufferedImage bi = imageToSave.getAsBufferedImage();
 		
@@ -65,8 +67,24 @@ public class ImageSaver {
 		} catch (IOException e) {
 			System.out.println("Creating the Inspiram saving directory under the C drive.");
 			boolean inspiramSavingDirectory = new File("C:/Inspiram/").mkdirs();
-			saveImageAsPNG(imageToSave, true, fileName);
+			saveImageAsPNG(ins, true, fileName);
 		}
+	}
+	
+	public PlanarImage mergeAllLayers(Inspiram ins) {
+		PlanarImage finalPlanarImage = null;
+		int startingNum = ins.layers.length-1;
+		if(ins.layers.length%2 == 1) {
+			startingNum--;
+			finalPlanarImage = ins.inspiramLocker.combineImages(ins.layers[ins.layers.length-1].getLayerImage(), ins.layers[ins.layers.length-1].getLayerImage(), true);
+		}
+		for(int i = startingNum; i >= 0; i--) {
+			if(finalPlanarImage == null) {
+				finalPlanarImage = ins.layers[startingNum].getLayerImage();
+			}
+			finalPlanarImage = ins.inspiramLocker.combineImages(finalPlanarImage, ins.layers[i].getLayerImage(), true);
+		}
+		return finalPlanarImage;
 	}
 	
 	/**

@@ -226,7 +226,7 @@ public class Locker extends JMenu {
 		    	newImageWidth = innerImageWidth;
 		    }
 		    if(!isOuterHeightBigger) {
-		    	newImageHeight = innerImageWidth;
+		    	newImageHeight = innerImageHeight;
 		    }
 	    }
 	    
@@ -409,11 +409,13 @@ public class Locker extends JMenu {
 						PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
 						
 						inspiram.layers[inspiram.currentLayer].setLayerImage(combineImages(inspiram.layers[inspiram.currentLayer].getLayerImage(), copiedPlanarImage, inspiram.layers[inspiram.currentLayer].getLayerImage() != null));
-						
+						inspiram.layers[inspiram.currentLayer].setPlainImage();
+						inspiram.layers[inspiram.currentLayer].add(inspiram.layers[inspiram.currentLayer].getImageDisplay());
+						inspiram.layers[inspiram.currentLayer].setLayerImage(null);
 						inspiram.displayJAIimage = null;
 //						inspiram.removeOldComponents();
 //						inspiram.displayJAIimage = new DisplayJAI(inspiram.loadedImage);
-						inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
+//						inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
 //						inspiram.layersHolder.add(inspiram.displayJAIimage);
 	
 	
