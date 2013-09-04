@@ -15,7 +15,7 @@ import com.sun.media.jai.widget.DisplayJAI;
 
 public class History extends JMenu {
 	
-	List<Change> history = new ArrayList<Change>();
+	static List<Change> history = new ArrayList<Change>();
 
 	public History() {
 		this.setText("History");
@@ -28,6 +28,10 @@ public class History extends JMenu {
 		for(JMenuItem i : history) {
 			this.add(i);
 		}
+	}
+	
+	public static void removeChange(Change c) {
+		history.remove(c);
 	}
 	
 	public List<Change> getHistory() {

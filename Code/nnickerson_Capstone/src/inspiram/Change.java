@@ -21,6 +21,7 @@ public class Change extends JMenu {
 	JMenuItem undoChange = new JMenuItem();
 	String changeDescription = "";
 	List<PixelHistory> allPixelHistory = new ArrayList<PixelHistory>();
+	Change thisChange = this;
 
 	public Change(String description) {
 		changeDescription = description;
@@ -45,6 +46,7 @@ public class Change extends JMenu {
 						inspiram.layers[inspiram.currentLayer].setPlainImage();
 						inspiram.layers[inspiram.currentLayer].add(inspiram.layers[inspiram.currentLayer].getImageDisplay());
 						inspiram.repaintEverything();
+						thisChange.removeAll();
 			}
 		};
 		return changeUndoListener;
@@ -62,15 +64,17 @@ public class Change extends JMenu {
 		readableRaster.getPixels(0, 0, width, height, pixels);
 		int pixelIndex = 0;
 		
-		for(PixelHistory ph : allPixelHistory) {
+		for(int i = allPixelHistory.size()-1; i >= 0; i--) {
 			System.out.println("REVERT PIXEL!!!");
-			System.out.println("R: " + ph.getPrevR() + "    G: " + ph.getPrevG() + "     B: " + ph.getPrevB() );
-			pixelIndex = ph.getY() * width * nbands + ph.getX() * nbands;
-			pixels[(pixelIndex) + (ph.R_BAND)] = ph.getPrevR();
-			pixels[(pixelIndex) + (ph.G_BAND)] = ph.getPrevG();
-			pixels[(pixelIndex) + (ph.B_BAND)] = ph.getPrevB();
+			System.out.println("R: " + allPixelHistory.get(i).getPrevR() + "    G: " + allPixelHistory.get(i).getPrevG() + "     B: " + allPixelHistory.get(i).getPrevB() );
+			pixelIndex = allPixelHistory.get(i).getY() * width * nbands + allPixelHistory.get(i).getX() * nbands;
+			pixels[(pixelIndex) + (allPixelHistory.get(i).R_BAND)] = allPixelHistory.get(i).getPrevR();
+			pixels[(pixelIndex) + (allPixelHistory.get(i).G_BAND)] = allPixelHistory.get(i).getPrevG();
+			pixels[(pixelIndex) + (allPixelHistory.get(i).B_BAND)] = allPixelHistory.get(i).getPrevB();
 		}
-
+		
+		History.removeChange(this);
+		
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(pImage, 1, 1);
 		ti.setData(writableRaster);
