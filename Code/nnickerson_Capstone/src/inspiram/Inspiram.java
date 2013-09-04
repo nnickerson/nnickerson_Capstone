@@ -200,7 +200,7 @@ public class Inspiram extends JApplet {
 	    this.repaint();
 	}
 	
-	public TiledImage createText(int textX, int textY, PlanarImage myTextImage) {
+	public TiledImage createText(int textX, int textY, PlanarImage myTextImage, String text) {
 		int width = myTextImage.getWidth();
 		int height = myTextImage.getHeight();
 		SampleModel mySampleModel = myTextImage.getSampleModel();
@@ -212,7 +212,9 @@ public class Inspiram extends JApplet {
 		int[] actualPixels = new int[nbands * width * height];
 		readableRaster.getPixels(0, 0, width, height, pixels);
 		actualRaster.getPixels(0, 0, width, height, actualPixels);
-		
+		Graphics graphic = layers[currentLayer].getGraphics();
+		graphic.setColor(Color.BLACK);
+		graphic.drawString(text, textX, textY);
 		int xMax = myTextImage.getWidth();
 		int yMax = myTextImage.getHeight();
 		
@@ -294,7 +296,7 @@ public class Inspiram extends JApplet {
 					String text = JOptionPane.showInputDialog("Please enter the text you want.");
 					Text texter = new Text();
 					PlanarImage myTextImage = texter.getPlanarImageFromImage(texter.putTextOnPlanarImage(layers[currentLayer].getLayerImage(), textX, textY, text));
-					displayTiledImage(createText(textX, textY, myTextImage));
+					displayTiledImage(createText(textX, textY, myTextImage, text));
 					texter = null;
 					System.gc();
 			}

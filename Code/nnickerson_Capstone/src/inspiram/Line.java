@@ -1,6 +1,8 @@
 package inspiram;
 
+import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -150,6 +152,10 @@ public class Line {
 			y1 = lineEY;
 			y2 = lineBY;
 		}
+		
+		Graphics g = inspiram.layers[inspiram.currentLayer].getGraphics();
+		g.setColor(Color.WHITE);
+		g.drawLine((int)x1, (int)y1, (int)x2, (int)y2);
 		
 		double repeatingXs = Math.abs(slope);
 		double yPlus = 0;
