@@ -336,7 +336,7 @@ public class Inspiram extends JApplet {
 					displayTiledImage(bcd.performLinearCurve(loadedImage));
 				}
 				else if(itemChosen.getName().equalsIgnoreCase("quadraticBezier")) {
-					bcd.performQuadraticCurve();
+					bcd.performQuadraticCurve(inspiramClass);
 				}
 				else if(itemChosen.getName().equalsIgnoreCase("highOrderBezier")) {
 					bcd.performHighOrderCurve();
