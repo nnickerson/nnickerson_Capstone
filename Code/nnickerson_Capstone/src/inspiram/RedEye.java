@@ -225,6 +225,7 @@ public class RedEye {
 		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
 		int[] pixels = new int[nbands*width*height];
 		readableRaster.getPixels(0, 0, width, height, pixels);
+		Change change = new Change("Red Eye Removal", inspiram.currentLayer);
 		int pixelIndex = 0;
 		int r = 0, g = 0, b = 0;
 		int y1 = 0;
@@ -253,15 +254,24 @@ public class RedEye {
 				b = pixels[pixelIndex+2];
 				if(isWithinUserCircle(centerEyeX, centerEyeY, inspiram.redEyeDiameter, x, y)) {
 					if(isRedEyeValues(r, g, b)) {
+						PixelHistory pixelHistory = new PixelHistory(x, y);
+						pixelHistory.setPrevR(pixels[pixelIndex+(0)]);
+						pixelHistory.setPrevG(pixels[pixelIndex+(1)]);
+						pixelHistory.setPrevB(pixels[pixelIndex+(2)]);
 						pixels[pixelIndex+(0)] = rValue;
 						pixels[pixelIndex+(1)] = gValue;
 						pixels[pixelIndex+(2)] = bValue;
+						pixelHistory.setNewR(pixels[pixelIndex+(0)]);
+						pixelHistory.setNewG(pixels[pixelIndex+(1)]);
+						pixelHistory.setNewB(pixels[pixelIndex+(2)]);
+						change.allPixelHistory.add(pixelHistory);
 	//					pixels = -antiAliasRedEye(pixels, pixelIndex, x, y, width, nbands);
 						pixels = antiAlias(pixels, (int)y, width, nbands, (int)x, inspiram.redEyeDiameter, centerEyeX, centerEyeY);
 					}
 				}
 			}
 		}
+		inspiram.inspiramHistory.addChange(change);
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(imageToFix,1,1);
 		ti.setData(writableRaster);
