@@ -256,9 +256,10 @@ public class BezierCurveDemo {
 				pixelIndexQ = (int)yQ * width * nbands + (int)xQ * nbands;
 				
 				PixelHistory pixelHistory = new PixelHistory((int)x1st, (int)y1st);
-				pixelHistory.setPrevR(pixels[(pixelIndexQ - 0) + (0)]);
-				pixelHistory.setPrevG(pixels[(pixelIndexQ - 0) + (1)]);
-				pixelHistory.setPrevB(pixels[(pixelIndexQ - 0) + (2)]);
+				if(!change.getAllPixelHistory().contains(pixelHistory.x) && !change.getAllPixelHistory().contains(pixelHistory.y)) {
+					pixelHistory.setPrevR(pixels[(pixelIndexQ - 0) + (0)]);
+					pixelHistory.setPrevG(pixels[(pixelIndexQ - 0) + (1)]);
+					pixelHistory.setPrevB(pixels[(pixelIndexQ - 0) + (2)]);
 					pixels[(pixelIndexQ - 0) + (0)] = 255;
 					pixels[(pixelIndexQ - 0) + (1)] = 255;
 					pixels[(pixelIndexQ - 0) + (2)] = 255;
@@ -268,6 +269,7 @@ public class BezierCurveDemo {
 					if(!change.getAllPixelHistory().contains(pixelHistory.x) && !change.getAllPixelHistory().contains(pixelHistory.y)) {
 						change.getAllPixelHistory().add(pixelHistory);
 					}
+				}
 					
 		}
 		inspiram.inspiramHistory.addChange(change);

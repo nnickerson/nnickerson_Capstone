@@ -316,15 +316,15 @@ public class Inspiram extends JApplet {
 	}
 	
 	public void addBezierCurveDemos() {
-		linearBezierOption = new JMenuItem("DEMO: Linear Bezier Curve");
+//		linearBezierOption = new JMenuItem("DEMO: Linear Bezier Curve");
 		quadraticBezierOption = new JMenuItem("DEMO: Quadratic Bezier Curve");
-		highOrderBezierOption = new JMenuItem("DEMO: High Bezier Curve");
-		linearBezierOption.setName("linearbezier");
+//		highOrderBezierOption = new JMenuItem("DEMO: High Bezier Curve");
+//		linearBezierOption.setName("linearbezier");
 		quadraticBezierOption.setName("quadraticBezier");
-		highOrderBezierOption.setName("highOrderBezier");
-	    toolsMenu.add(linearBezierOption);
+//		highOrderBezierOption.setName("highOrderBezier");
+//	    toolsMenu.add(linearBezierOption);
 	    toolsMenu.add(quadraticBezierOption);
-	    toolsMenu.add(highOrderBezierOption);
+//	    toolsMenu.add(highOrderBezierOption);
 	    this.setJMenuBar(mainMenuBar);
 	    
 	    //Listeners//
@@ -347,9 +347,9 @@ public class Inspiram extends JApplet {
 		};
 	    //End of listeners//
 		
-		linearBezierOption.addActionListener(bezierListener);
+//		linearBezierOption.addActionListener(bezierListener);
 		quadraticBezierOption.addActionListener(bezierListener);
-		highOrderBezierOption.addActionListener(bezierListener);
+//		highOrderBezierOption.addActionListener(bezierListener);
 	    
 	    this.getContentPane().repaint();
 	    
