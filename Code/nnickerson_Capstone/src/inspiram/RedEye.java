@@ -244,7 +244,7 @@ public class RedEye {
 		if(inspiram.redEyeCenterY+(inspiram.redEyeDiameter/2) <= height) {
 			yMax = inspiram.redEyeCenterY+(inspiram.redEyeDiameter/2);
 		}
-		System.out.println("#*(UE#@(*UE#DJ Y!: " + y1 + ", " + yMax + "   :::   "  + x1 + ", " + xMax);
+//		System.out.println("#*(UE#@(*UE#DJ Y!: " + y1 + ", " + yMax + "   :::   "  + x1 + ", " + xMax);
 		for(int y=y1;y<yMax;y++) {
 			for(int x=x1;x<xMax;x++)
 			{

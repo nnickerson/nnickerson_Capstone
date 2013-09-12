@@ -130,6 +130,10 @@ public class Inspiram extends JApplet {
 	    this.add(welcomeJLabel);
 	}
 	
+	public void addBezierPoints() {
+		
+	}
+	
 	public void addResizeOption() {
 		JMenuItem resizeOption = new JMenuItem("Resize Image On Layer");
 		editMenu.add(resizeOption);

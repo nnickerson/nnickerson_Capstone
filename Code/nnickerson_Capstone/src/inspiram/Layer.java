@@ -19,6 +19,7 @@ public class Layer extends DisplayJAI {
 	private DisplayJAI layerDisplay;
 	private Image plainImage;
 	private JLabel imageDisplay;
+	public boolean hasBezierCurve = false;
 	
 	public Layer(String layerName, int layerID)  {
 		this.layerName = layerName;

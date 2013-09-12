@@ -36,68 +36,7 @@ public class BezierCurveDemo {
 	 * @return
 	 */
 	public TiledImage performLinearCurve(PlanarImage loadedImage) {
-		System.out.println("Performing the linear curve!");
-		
-		int width = loadedImage.getWidth();
-		int height = loadedImage.getHeight();
-		SampleModel mySampleModel = loadedImage.getSampleModel();
-		int nbands = mySampleModel.getNumBands();
-		Raster readableRaster = loadedImage.getData();
-		WritableRaster writableRaster = readableRaster.createCompatibleWritableRaster();
-		int[] pixels = new int[nbands*width*height];
-		readableRaster.getPixels(0, 0, width, height, pixels);
-		int pixelIndex = 0;
-		Random r = new Random();
-		int randomXMin = r.nextInt(50)+10;
-		int randomYMin = r.nextInt(50)+10;
-		int randomXMax = r.nextInt(200)+150;
-		int randomYMax = r.nextInt(200)+150;
-		int slope = (randomYMax-randomYMin)/(randomXMax-randomXMin);
-		int totalIncrements = 100;
-		int bezierIncrements = ((randomXMax-randomXMin)/totalIncrements);
-		int currentIncrement = 1;
-		for(int y=randomYMin;y<randomYMax;y++) {
-			for(int x=randomXMin;x<randomXMax;x++)
-			{
-				System.out.println("SLOPE: " + (randomYMin+(y+(slope*(x-randomXMin)))) + "    Y: " + y);
-				if((randomYMin+(y+(slope*(x-randomXMin)))) == y) {
-					pixelIndex = y*width*nbands+x*nbands;
-					for(int band=0;band<nbands;band++) {
-						if((bezierIncrements*x) == x) {
-							System.out.println("Increment " + currentIncrement + " at: (" + x + ", " + y);
-							currentIncrement++;
-						}
-						pixels[(pixelIndex-0)+(band)] = 255;
-						pixels[(pixelIndex-1)+(band)] = 255;
-						pixels[(pixelIndex-2)+(band)] = 255;
-						pixels[(pixelIndex-3)+(band)] = 255;
-						pixels[(pixelIndex-4)+(band)] = 255;
-						pixels[(pixelIndex-5)+(band)] = 255;
-						pixels[(pixelIndex-6)+(band)] = 255;
-						pixels[(pixelIndex-7)+(band)] = 255;
-						pixels[(pixelIndex-8)+(band)] = 255;
-						pixels[(pixelIndex-9)+(band)] = 255;
-						writableRaster.setPixels(0, 0, width, height, pixels);
-						TiledImage ti = new TiledImage(loadedImage,1,1);
-						ti.setData(writableRaster);
-						loadedImage = ti.createSnapshot();
-						DisplayJAI displayJAIimage = new DisplayJAI(loadedImage);
-						currentApplet.getContentPane().add(displayJAIimage);
-						
-						currentApplet.getContentPane().repaint();
-						
-						currentApplet.setSize(currentApplet.getWidth()-1, currentApplet.getHeight()-1);
-						currentApplet.setSize(currentApplet.getWidth()+1, currentApplet.getHeight()+1);
-						currentApplet.getContentPane().repaint();
-						currentApplet.repaint();
-					}
-				}
-			}
-		}
-		writableRaster.setPixels(0, 0, width, height, pixels);
-		TiledImage ti = new TiledImage(loadedImage,1,1);
-		ti.setData(writableRaster);
-		TiledImage myTiledImage = ti;
+		TiledImage ti = null;
 		return ti;
 	}
 	
@@ -109,7 +48,6 @@ public class BezierCurveDemo {
 
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
 				
 			}
 
@@ -150,22 +88,13 @@ public class BezierCurveDemo {
 			}
 
 			@Override
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void mouseReleased(MouseEvent e) {}
 
 			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void mouseEntered(MouseEvent e) {}
 
 			@Override
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void mouseExited(MouseEvent e) {}
 			
 		});
 	}
@@ -255,7 +184,7 @@ public class BezierCurveDemo {
 			
 				pixelIndexQ = (int)yQ * width * nbands + (int)xQ * nbands;
 				
-				PixelHistory pixelHistory = new PixelHistory((int)x1st, (int)y1st);
+				PixelHistory pixelHistory = new PixelHistory((int)xQ, (int)yQ);
 				if(!change.getAllPixelHistory().contains(pixelHistory.x) && !change.getAllPixelHistory().contains(pixelHistory.y)) {
 					pixelHistory.setPrevR(pixels[(pixelIndexQ - 0) + (0)]);
 					pixelHistory.setPrevG(pixels[(pixelIndexQ - 0) + (1)]);
