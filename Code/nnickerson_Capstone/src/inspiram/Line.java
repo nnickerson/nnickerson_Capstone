@@ -174,12 +174,14 @@ public class Line {
 					System.out.println("Coordinates: (" + x + ", " + y + ")");
 				}
 				PixelHistory pixelHistory = new PixelHistory((int)x, (int)y);
-				if(0 <= (x%1) && (x%1) < .01 && slope < 0) {
-					pixels = antiAlias(pixels, (int)y, width, nbands, (int)x, change, inspiram.currentLayer);
-				}
 				pixelHistory.setPrevR(pixels[(pixelIndex - 0) + (0)]);
 				pixelHistory.setPrevG(pixels[(pixelIndex - 0) + (1)]);
 				pixelHistory.setPrevB(pixels[(pixelIndex - 0) + (2)]);
+				if((0 <= (x%1) && (x%1) < .01 && slope < 0) || (0 <= (x%1) && (x%1) < .01 && slope > 0)) {
+					pixels = antiAlias(pixels, (int)y, width, nbands, (int)x, change, inspiram.currentLayer);
+//					System.out.println("I reached ANTI-ALIAS1 MUhahahahHAHA");
+				}
+				//use to set previous values here
 					pixels[(pixelIndex - 0) + (0)] = 255;
 					pixels[(pixelIndex - 0) + (1)] = 255;
 					pixels[(pixelIndex - 0) + (2)] = 255;
@@ -189,7 +191,10 @@ public class Line {
 					if(!change.getAllPixelHistory().contains(pixelHistory.x) && !change.getAllPixelHistory().contains(pixelHistory.y)) {
 						change.getAllPixelHistory().add(pixelHistory);
 					}
-					pixels = antiAlias2(pixels, (int)y, width, nbands, (int)x, change, inspiram.currentLayer);
+					if((0 <= (x%1) && (x%1) < .01 && slope < 0) || (0 <= (x%1) && (x%1) < .01 && slope > 0)) {
+						pixels = antiAlias2(pixels, (int)y, width, nbands, (int)x, change, inspiram.currentLayer);
+						System.out.println("I reached ANTI-ALIAS2 MUhahahahHAHA");
+					}
 		}
 		inspiram.inspiramHistory.addChange(change);
 		writableRaster.setPixels(0, 0, width, height, pixels);
@@ -225,24 +230,30 @@ public class Line {
 		int differenceR = currentR-east3R;
 		int differenceG = currentG-east3G;
 		int differenceB = currentB-east3B;
-		east1History.setPrevR(pixels[(east1)+0]);
-		east1History.setPrevG(pixels[(east1)+1]);
-		east1History.setPrevB(pixels[(east1)+2]);
-		pixels[(east1)+0] = ((differenceR/3)*2)+east3R;
-		pixels[(east1)+1] = ((differenceG/3)*2)+east3G;
-		pixels[(east1)+2] = ((differenceB/3)*2)+east3B;
-		east1History.setNewR(pixels[(east1)+0]);
-		east1History.setNewG(pixels[(east1)+1]);
-		east1History.setNewB(pixels[(east1)+2]);
-		east2History.setPrevR(pixels[(east2)+0]);
-		east2History.setPrevG(pixels[(east2)+1]);
-		east2History.setPrevB(pixels[(east2)+2]);
-		pixels[(east2)+0] = ((differenceR/3))+east3R;
-		pixels[(east2)+1] = ((differenceG/3))+east3G;
-		pixels[(east2)+2] = ((differenceB/3))+east3B;
-		east2History.setNewR(pixels[(east2)+0]);
-		east2History.setNewG(pixels[(east2)+1]);
-		east2History.setNewB(pixels[(east2)+2]);
+		east1History.setPrevR(currentR);
+		east1History.setPrevG(currentG);
+		east1History.setPrevB(currentB);
+		int newRed = ((differenceR/3)*2)+east3R;
+		int newGreen = ((differenceG/3)*2)+east3G;
+		int newBlue = ((differenceB/3)*2)+east3B;
+		pixels[(east1)+0] = newRed;
+		pixels[(east1)+1] = newGreen;
+		pixels[(east1)+2] = newBlue;
+		east1History.setNewR(newRed);
+		east1History.setNewG(newGreen);
+		east1History.setNewB(newBlue);
+		east2History.setPrevR(currentR);
+		east2History.setPrevG(currentG);
+		east2History.setPrevB(currentB);
+		int newRed2 = ((differenceR/3))+east3R;
+		int newGreen2 = ((differenceG/3))+east3G;
+		int newBlue2 = ((differenceB/3))+east3B;
+		pixels[(east2)+0] = newRed2;
+		pixels[(east2)+1] = newGreen2;
+		pixels[(east2)+2] = newBlue2;
+		east2History.setNewR(newRed2);
+		east2History.setNewG(newGreen2);
+		east2History.setNewB(newBlue2);
 		
 		
 		
@@ -255,18 +266,18 @@ public class Line {
 				differenceR = currentR-west3R;
 				differenceG = currentG-west3G;
 				differenceB = currentB-west3B;
-				west1History.setPrevR(pixels[(west1)+0]);
-				west1History.setPrevG(pixels[(west1)+1]);
-				west1History.setPrevB(pixels[(west1)+2]);
+				west1History.setPrevR(currentR);
+				west1History.setPrevG(currentG);
+				west1History.setPrevB(currentB);
 				pixels[(west1)+0] = ((differenceR/3)*2)+west3R;
 				pixels[(west1)+1] = ((differenceG/3)*2)+west3G;
 				pixels[(west1)+2] = ((differenceB/3)*2)+west3B;
 				west1History.setNewR(pixels[(west1)+0]);
 				west1History.setNewG(pixels[(west1)+1]);
 				west1History.setNewB(pixels[(west1)+2]);
-				west2History.setPrevR(pixels[(west2)+0]);
-				west2History.setPrevG(pixels[(west2)+1]);
-				west2History.setPrevB(pixels[(west2)+2]);
+				west2History.setPrevR(currentR);
+				west2History.setPrevG(currentG);
+				west2History.setPrevB(currentB);
 				pixels[(west2)+0] = ((differenceR/3))+west3R;
 				pixels[(west2)+1] = ((differenceG/3))+west3G;
 				pixels[(west2)+2] = ((differenceB/3))+west3B;
@@ -283,18 +294,18 @@ public class Line {
 				differenceR = currentR-south3R;
 				differenceG = currentG-south3G;
 				differenceB = currentB-south3B;
-				south1History.setPrevR(pixels[(south1)+0]);
-				south1History.setPrevG(pixels[(south1)+1]);
-				south1History.setPrevB(pixels[(south1)+2]);
+				south1History.setPrevR(currentR);
+				south1History.setPrevG(currentG);
+				south1History.setPrevB(currentB);
 				pixels[(south1)+0] = ((differenceR/3)*2)+south3R;
 				pixels[(south1)+1] = ((differenceG/3)*2)+south3G;
 				pixels[(south1)+2] = ((differenceB/3)*2)+south3B;
 				south1History.setNewR(pixels[(south1)+0]);
 				south1History.setNewG(pixels[(south1)+1]);
 				south1History.setNewB(pixels[(south1)+2]);
-				south2History.setPrevR(pixels[(south2)+0]);
-				south2History.setPrevG(pixels[(south2)+1]);
-				south2History.setPrevB(pixels[(south2)+2]);
+				south2History.setPrevR(currentR);
+				south2History.setPrevG(currentG);
+				south2History.setPrevB(currentB);
 				pixels[(south2)+0] = ((differenceR/3))+south3R;
 				pixels[(south2)+1] = ((differenceG/3))+south3G;
 				pixels[(south2)+2] = ((differenceB/3))+south3B;
@@ -311,18 +322,18 @@ public class Line {
 				differenceR = currentR-north3R;
 				differenceG = currentG-north3G;
 				differenceB = currentB-north3B;
-				north1History.setPrevR(pixels[(north1)+0]);
-				north1History.setPrevG(pixels[(north1)+1]);
-				north1History.setPrevB(pixels[(north1)+2]);
+				north1History.setPrevR(currentR);
+				north1History.setPrevG(currentG);
+				north1History.setPrevB(currentB);
 				pixels[(north1)+0] = ((differenceR/3)*2)+north3R;
 				pixels[(north1)+1] = ((differenceG/3)*2)+north3G;
 				pixels[(north1)+2] = ((differenceB/3)*2)+north3B;
 				north1History.setNewR(pixels[(north1)+0]);
 				north1History.setNewG(pixels[(north1)+1]);
 				north1History.setNewB(pixels[(north1)+2]);
-				north2History.setPrevR(pixels[(north2)+0]);
-				north2History.setPrevG(pixels[(north2)+1]);
-				north2History.setPrevB(pixels[(north2)+2]);
+				north2History.setPrevR(currentR);
+				north2History.setPrevG(currentG);
+				north2History.setPrevB(currentB);
 				pixels[(north2)+0] = ((differenceR/3))+north3R;
 				pixels[(north2)+1] = ((differenceG/3))+north3G;
 				pixels[(north2)+2] = ((differenceB/3))+north3B;
@@ -379,9 +390,9 @@ public class Line {
 		int differenceR = currentR-east2R;
 		int differenceG = currentG-east2G;
 		int differenceB = currentB-east2B;
-		east1History.setPrevR(pixels[(east1)+0]);
-		east1History.setPrevG(pixels[(east1)+1]);
-		east1History.setPrevB(pixels[(east1)+2]);
+		east1History.setPrevR(currentR); //east1History.setPrevR(pixels[(east1)+0]);
+		east1History.setPrevG(currentG); //east1History.setPrevG(pixels[(east1)+1]);
+		east1History.setPrevB(currentB); //east1History.setPrevB(pixels[(east1)+2]);
 		pixels[(east1)+0] = ((differenceR/3))+east2R;
 		pixels[(east1)+1] = ((differenceG/3))+east2G;
 		pixels[(east1)+2] = ((differenceB/3))+east2B;
@@ -399,9 +410,9 @@ public class Line {
 				differenceR = currentR-west2R;
 				differenceG = currentG-west2G;
 				differenceB = currentB-west2B;
-				west1History.setPrevR(pixels[(west1)+0]);
-				west1History.setPrevG(pixels[(west1)+1]);
-				west1History.setPrevB(pixels[(west1)+2]);
+				west1History.setPrevR(currentR);
+				west1History.setPrevG(currentG);
+				west1History.setPrevB(currentB);
 				pixels[(west1)+0] = ((differenceR/3))+west2R;
 				pixels[(west1)+1] = ((differenceG/3))+west2G;
 				pixels[(west1)+2] = ((differenceB/3))+west2B;
@@ -417,9 +428,9 @@ public class Line {
 				differenceR = currentR-south2R;
 				differenceG = currentG-south2G;
 				differenceB = currentB-south2B;
-				south1History.setPrevR(pixels[(south1)+0]);
-				south1History.setPrevG(pixels[(south1)+1]);
-				south1History.setPrevB(pixels[(south1)+2]);
+				south1History.setPrevR(currentR);
+				south1History.setPrevG(currentG);
+				south1History.setPrevB(currentB);
 				pixels[(south1)+0] = ((differenceR/3))+south2R;
 				pixels[(south1)+1] = ((differenceG/3))+south2G;
 				pixels[(south1)+2] = ((differenceB/3))+south2B;
@@ -435,9 +446,9 @@ public class Line {
 				differenceR = currentR-north2R;
 				differenceG = currentG-north2G;
 				differenceB = currentB-north2B;
-				north1History.setPrevR(pixels[(north1)+0]);
-				north1History.setPrevG(pixels[(north1)+1]);
-				north1History.setPrevB(pixels[(north1)+2]);
+				north1History.setPrevR(currentR);
+				north1History.setPrevG(currentG);
+				north1History.setPrevB(currentB);
 				pixels[(north1)+0] = ((differenceR/3))+north2R;
 				pixels[(north1)+1] = ((differenceG/3))+north2G;
 				pixels[(north1)+2] = ((differenceB/3))+north2B;

@@ -1,5 +1,7 @@
 package inspiram;
 
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -10,13 +12,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
-import java.awt.image.ImageObserver;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
-
 import javax.media.jai.JAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.TiledImage;
@@ -24,8 +24,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-
-import com.sun.media.jai.widget.DisplayJAI;
 
 /**
  * Creates a locker that holds multiple images. Meant for the purposes of grabbing
@@ -248,6 +246,40 @@ public class Locker extends JMenu {
 		
 		return combinedImage;
 	}
+	
+	public static BufferedImage imageToBufferedImage(Image img)
+	{
+		BufferedImage bimage = null;
+		
+		if(img == null) {
+			bimage = new BufferedImage(100, 100, BufferedImage.TYPE_INT_RGB);
+		} else {
+			bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_RGB);
+			Graphics2D bGr = bimage.createGraphics();
+		    bGr.drawImage(img, 0, 0, null);
+		    bGr.dispose();
+		}
+		
+	    return bimage;
+	}
+	
+	public Image add2Images(Image image1, Image image2) {
+		Image newImage = null;
+		
+		BufferedImage bi1 = imageToBufferedImage(image1);
+		BufferedImage bi2 = imageToBufferedImage(image2);
+		int newWidth = Math.max(bi1.getWidth(), bi2.getWidth());
+		int newHeight = Math.max(bi1.getHeight(), bi2.getHeight());
+		BufferedImage combined = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+		
+		Graphics g = combined.getGraphics();
+		g.drawImage(bi1, 0, 0, null);
+		g.drawImage(bi2, 0, 0, null);
+		
+		newImage = combined.getScaledInstance(newWidth, newHeight, Image.SCALE_REPLICATE);
+		
+		return newImage;
+	}
 
 	private PlanarImage addImageToImage(PlanarImage innerImage, PlanarImage blankedImage) {
 		int width = innerImage.getWidth();
@@ -291,9 +323,10 @@ public class Locker extends JMenu {
 		int copiedImageHeight = bi.getHeight();
 		
 		if(copiedImage != null) {
-			PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
+//			PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
 			resizeLayer(inspiram, copiedImageWidth, copiedImageHeight);
-			inspiram.layers[inspiram.currentLayer].setLayerImage(myLocker.combineImages(inspiram.layers[inspiram.currentLayer].getLayerImage(), copiedPlanarImage, inspiram.layers[inspiram.currentLayer].getLayerImage() != null));
+//			inspiram.layers[inspiram.currentLayer].setLayerImage(myLocker.combineImages(inspiram.layers[inspiram.currentLayer].getLayerImage(), copiedPlanarImage, inspiram.layers[inspiram.currentLayer].getLayerImage() != null));
+			inspiram.layers[inspiram.currentLayer].setLayerImage(noText.getPlanarImageFromImage(myLocker.add2Images(inspiram.layers[inspiram.currentLayer].getPlainImage(), copiedImage)));
 			
 //			inspiram.displayJAIimage = null;
 //			inspiram.removeOldComponents();
@@ -406,13 +439,15 @@ public class Locker extends JMenu {
 					Image copiedImage = getImageFromLocker(chosenImageNumber);
 					System.out.println("Pasting image from Locker!");
 					if(copiedImage != null) {
-						PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
-						
-						inspiram.layers[inspiram.currentLayer].setLayerImage(combineImages(inspiram.layers[inspiram.currentLayer].getLayerImage(), copiedPlanarImage, inspiram.layers[inspiram.currentLayer].getLayerImage() != null));
+						Image scaledCopiedImage = resizeToFit(copiedImage); 
+						inspiram.layers[inspiram.currentLayer].setLayerImage(noText.getPlanarImageFromImage(add2Images(inspiram.layers[inspiram.currentLayer].getPlainImage(), scaledCopiedImage)));
 						inspiram.layers[inspiram.currentLayer].setPlainImage();
 						inspiram.layers[inspiram.currentLayer].add(inspiram.layers[inspiram.currentLayer].getImageDisplay());
 						inspiram.layers[inspiram.currentLayer].setLayerImage(null);
 						inspiram.displayJAIimage = null;
+						int newLayerWidth = imageToBufferedImage(scaledCopiedImage).getWidth();
+						int newLayerHeight = imageToBufferedImage(scaledCopiedImage).getHeight();
+						inspiram.layers[inspiram.currentLayer].setSize(newLayerWidth, newLayerHeight);
 //						inspiram.removeOldComponents();
 //						inspiram.displayJAIimage = new DisplayJAI(inspiram.loadedImage);
 //						inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
@@ -442,5 +477,34 @@ public class Locker extends JMenu {
 			pasteStoredImageOption.addActionListener(lockerListener);
 			storeImageOption.addActionListener(lockerListener);
 		}
+	}
+	
+	public Image resizeToFit(Image image) {
+		BufferedImage bi = imageToBufferedImage(image);
+		boolean imageCanFit = false;
+		float scaledX = bi.getWidth();
+		float scaledY = bi.getHeight();
+		float scale = 0.0f;
+		while(!imageCanFit) {
+			if(scaledX <= Toolkit.getDefaultToolkit().getScreenSize().getWidth()*.9) {
+				if(scaledY <= Toolkit.getDefaultToolkit().getScreenSize().getHeight()*.9) {
+					imageCanFit = true;
+				}
+				else {
+					scaledX = scaledX*.9f;
+					scaledY = scaledY*.9f;
+					scale += 0.1f;
+				}
+			}
+			else {
+				scaledX = scaledX*.9f;
+				scaledY = scaledY*.9f;
+				scale += 0.1f;
+			}
+		}
+		
+		Image imageScaled = bi.getScaledInstance((int)scaledX, (int)scaledY, Image.SCALE_SMOOTH);
+		
+		return imageScaled;
 	}
 }

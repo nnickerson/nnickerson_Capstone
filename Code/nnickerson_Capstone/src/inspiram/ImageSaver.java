@@ -1,5 +1,6 @@
 package inspiram;
 
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -54,9 +55,9 @@ public class ImageSaver {
 			fileName = fileNameParam;
 		}
 		
-		PlanarImage imageToSave = mergeAllLayers(ins);
+		Image imageToSave = mergeAllLayers(ins);
 		
-		BufferedImage bi = imageToSave.getAsBufferedImage();
+		BufferedImage bi = ins.inspiramLocker.imageToBufferedImage(imageToSave);
 		
 		File savingFile = new File(filePath + fileName + ".png");		
 		
@@ -71,20 +72,23 @@ public class ImageSaver {
 		}
 	}
 	
-	public PlanarImage mergeAllLayers(Inspiram ins) {
-		PlanarImage finalPlanarImage = null;
+	public Image mergeAllLayers(Inspiram ins) {
+		Image finalImage = null;
 		int startingNum = ins.layers.length-1;
 		if(ins.layers.length%2 == 1) {
 			startingNum--;
-			finalPlanarImage = ins.inspiramLocker.combineImages(ins.layers[ins.layers.length-1].getLayerImage(), ins.layers[ins.layers.length-1].getLayerImage(), true);
+//			finalImage = ins.inspiramLocker.combineImages(ins.layers[ins.layers.length-1].getLayerImage(), ins.layers[ins.layers.length-1].getLayerImage(), true);
+			finalImage = ins.inspiramLocker.add2Images(ins.layers[ins.layers.length-1].getPlainImage(), ins.layers[ins.layers.length-1].getPlainImage());
 		}
 		for(int i = startingNum; i >= 0; i--) {
-			if(finalPlanarImage == null) {
-				finalPlanarImage = ins.layers[startingNum].getLayerImage();
+			if(finalImage == null) {
+				finalImage = ins.layers[startingNum].getPlainImage();
 			}
-			finalPlanarImage = ins.inspiramLocker.combineImages(finalPlanarImage, ins.layers[i].getLayerImage(), true);
+//			finalImage = ins.inspiramLocker.combineImages(finalPlanarImage, ins.layers[i].getLayerImage(), true);
+			finalImage = ins.inspiramLocker.add2Images(finalImage, ins.layers[i].getPlainImage());
+			
 		}
-		return finalPlanarImage;
+		return finalImage;
 	}
 	
 	/**

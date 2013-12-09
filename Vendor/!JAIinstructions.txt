@@ -9,7 +9,7 @@ To use inside of Eclipse:
 1. Right click your current project.
 2. Click properties all the way at the bottom.
 3. Click Java Build Path
-4. Click the Add External JARs button.
+4. Under the Libraries tab click the Add External JARs button.
 5. Navigate to the JDK where you installed the JAI api.
 6. Once your in the JDK folder, go to > jre > lib > ext
 7. Choose both the jai_codec.jar and the jai_core.jar.
