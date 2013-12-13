@@ -323,11 +323,14 @@ public class Locker extends JMenu {
 		int copiedImageHeight = bi.getHeight();
 		
 		if(copiedImage != null) {
+			if(inspiram.layers.length == 0) {
+				inspiram.addLayer();
+			}
 //			PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
 			resizeLayer(inspiram, copiedImageWidth, copiedImageHeight);
 //			inspiram.layers[inspiram.currentLayer].setLayerImage(myLocker.combineImages(inspiram.layers[inspiram.currentLayer].getLayerImage(), copiedPlanarImage, inspiram.layers[inspiram.currentLayer].getLayerImage() != null));
 			inspiram.layers[inspiram.currentLayer].setLayerImage(noText.getPlanarImageFromImage(myLocker.add2Images(inspiram.layers[inspiram.currentLayer].getPlainImage(), copiedImage)));
-			
+			inspiram.layers[inspiram.currentLayer].setPlainImage();
 //			inspiram.displayJAIimage = null;
 //			inspiram.removeOldComponents();
 			inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
@@ -352,8 +355,10 @@ public class Locker extends JMenu {
 	 * @param copiedImageWidth
 	 * @param copiedImageHeight
 	 */
-	public void resizeLayer(Inspiram inspiram, int copiedImageWidth,
-			int copiedImageHeight) {
+	public void resizeLayer(Inspiram inspiram, int copiedImageWidth, int copiedImageHeight) {
+		if(inspiram.layers.length == 0) {
+			inspiram.addLayer();
+		}
 		if(copiedImageWidth > inspiram.layers[inspiram.currentLayer].getWidth()) {
 			inspiram.layers[inspiram.currentLayer].setSize(copiedImageWidth, inspiram.layers[inspiram.currentLayer].getHeight());
 		}
@@ -372,7 +377,7 @@ public class Locker extends JMenu {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				pasteImageFromClipboard(inspiram.inspiramClass);				
+				pasteImageFromClipboard(inspiram.inspiramClass); //Ctrl+V can be found below			
 			}
 		};
 	    //End of listeners//
@@ -434,31 +439,35 @@ public class Locker extends JMenu {
 					System.out.println("Pasting image from locker!");
 					JPopupMenu popupMenu = (JPopupMenu)chosenMenuItem.getParent();
 					JMenu parentMenu = (JMenu)popupMenu.getInvoker();
+					Locker myLocker = new Locker();
 					int chosenImageNumber = Integer.parseInt(parentMenu.getName());
 					Text noText = new Text();
 					Image copiedImage = getImageFromLocker(chosenImageNumber);
+					BufferedImage bi = imageToBufferedImage(copiedImage);
+					int copiedImageWidth = bi.getWidth();
+					int copiedImageHeight = bi.getHeight();
 					System.out.println("Pasting image from Locker!");
 					if(copiedImage != null) {
-						Image scaledCopiedImage = resizeToFit(copiedImage); 
-						inspiram.layers[inspiram.currentLayer].setLayerImage(noText.getPlanarImageFromImage(add2Images(inspiram.layers[inspiram.currentLayer].getPlainImage(), scaledCopiedImage)));
+						if(inspiram.layers.length == 0) {
+							inspiram.addLayer();
+						}
+//						PlanarImage copiedPlanarImage = noText.getPlanarImageFromImage(copiedImage);
+						resizeLayer(inspiram, copiedImageWidth, copiedImageHeight);
+//						inspiram.layers[inspiram.currentLayer].setLayerImage(myLocker.combineImages(inspiram.layers[inspiram.currentLayer].getLayerImage(), copiedPlanarImage, inspiram.layers[inspiram.currentLayer].getLayerImage() != null));
+						inspiram.layers[inspiram.currentLayer].setLayerImage(noText.getPlanarImageFromImage(myLocker.add2Images(inspiram.layers[inspiram.currentLayer].getPlainImage(), copiedImage)));
 						inspiram.layers[inspiram.currentLayer].setPlainImage();
-						inspiram.layers[inspiram.currentLayer].add(inspiram.layers[inspiram.currentLayer].getImageDisplay());
-						inspiram.layers[inspiram.currentLayer].setLayerImage(null);
-						inspiram.displayJAIimage = null;
-						int newLayerWidth = imageToBufferedImage(scaledCopiedImage).getWidth();
-						int newLayerHeight = imageToBufferedImage(scaledCopiedImage).getHeight();
-						inspiram.layers[inspiram.currentLayer].setSize(newLayerWidth, newLayerHeight);
+//						inspiram.displayJAIimage = null;
 //						inspiram.removeOldComponents();
-//						inspiram.displayJAIimage = new DisplayJAI(inspiram.loadedImage);
-//						inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
+						inspiram.layers[inspiram.currentLayer].set(inspiram.layers[inspiram.currentLayer].getLayerImage());
+						inspiram.layers[inspiram.currentLayer].setOpaque(false);
 //						inspiram.layersHolder.add(inspiram.displayJAIimage);
-	
-	
-						inspiram.thisApplet.getContentPane().repaint();
-						inspiram.thisApplet.setSize(inspiram.thisApplet.getWidth() - 1, inspiram.thisApplet.getHeight() - 1);
-						inspiram.thisApplet.setSize(inspiram.thisApplet.getWidth() + 1, inspiram.thisApplet.getHeight() + 1);
-						inspiram.layersHolder.repaint();
-						inspiram.thisApplet.repaint();
+//						inspiram.layersHolder.setVisible(false);
+				
+						inspiram.getContentPane().repaint();
+						inspiram.setSize(inspiram.getWidth() - 1, inspiram.getHeight() - 1);
+						inspiram.setSize(inspiram.getWidth() + 1, inspiram.getHeight() + 1);
+						inspiram.layers[inspiram.currentLayer].repaint();
+						inspiram.repaint();
 						inspiram.repaint();
 					}
 					else {

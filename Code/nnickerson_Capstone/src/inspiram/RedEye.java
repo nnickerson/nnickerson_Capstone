@@ -37,7 +37,7 @@ public class RedEye {
 		
 	}
 	
-	public int[] antiAlias(int[] pixels, int y, int width, int nbands, int x, int redEyeDiameter, int circleX, int circleY) {
+	public int[] antiAlias(int[] pixels, int y, int width, int nbands, int x, int redEyeDiameter, int circleX, int circleY, Change change) {
 		int pixelIndex = (int)y * width * nbands + (int)x * nbands;
 		int east3 = (int)y * width * nbands + ((int)(x+3)) * nbands;
 		int west3 = (int)y * width * nbands + ((int)(x-3)) * nbands;
@@ -67,10 +67,90 @@ public class RedEye {
 		int currentG = pixels[pixelIndex+1];
 		int currentB = pixels[pixelIndex+2];
 		
+		int currentRE1 = pixels[east1+0];
+		int currentGE1 = pixels[east1+1];
+		int currentBE1 = pixels[east1+2];
+		int currentRE2 = pixels[east2+0];
+		int currentGE2 = pixels[east2+1];
+		int currentBE2 = pixels[east2+2];
+		
+		int currentRW1 = pixels[west1+0];
+		int currentGW1 = pixels[west1+1];
+		int currentBW1 = pixels[west1+2];
+		int currentRW2 = pixels[west2+0];
+		int currentGW2 = pixels[west2+1];
+		int currentBW2 = pixels[west2+2];
+		
+		int currentRS1 = pixels[south1+0];
+		int currentGS1 = pixels[south1+1];
+		int currentBS1 = pixels[south1+2];
+		int currentRS2 = pixels[south2+0];
+		int currentGS2 = pixels[south2+1];
+		int currentBS2 = pixels[south2+2];
+		
+		int currentRN1 = pixels[north1+0];
+		int currentGN1 = pixels[north1+1];
+		int currentBN1 = pixels[north1+2];
+		int currentRN2 = pixels[north2+0];
+		int currentGN2 = pixels[north2+1];
+		int currentBN2 = pixels[north2+2];
+		
+		int currentRSE1 = pixels[se1+0];
+		int currentGSE1 = pixels[se1+1];
+		int currentBSE1 = pixels[se1+2];
+		int currentRSE2 = pixels[se2+0];
+		int currentGSE2 = pixels[se2+1];
+		int currentBSE2 = pixels[se2+2];
+		
+		int currentRNE1 = pixels[ne1+0];
+		int currentGNE1 = pixels[ne1+1];
+		int currentBNE1 = pixels[ne1+2];
+		int currentRNE2 = pixels[ne2+0];
+		int currentGNE2 = pixels[ne2+1];
+		int currentBNE2 = pixels[ne2+2];
+		
+		int currentRSW1 = pixels[sw1+0];
+		int currentGSW1 = pixels[sw1+1];
+		int currentBSW1 = pixels[sw1+2];
+		int currentRSW2 = pixels[sw2+0];
+		int currentGSW2 = pixels[sw2+1];
+		int currentBSW2 = pixels[sw2+2];
+		
+		int currentRNW1 = pixels[nw1+0];
+		int currentGNW1 = pixels[nw1+1];
+		int currentBNW1 = pixels[nw1+2];
+		int currentRNW2 = pixels[nw2+0];
+		int currentGNW2 = pixels[nw2+1];
+		int currentBNW2 = pixels[nw2+2];
+		
+		PixelHistory east1History = new PixelHistory((int)x+1, y);
+		PixelHistory east2History = new PixelHistory((int)x+2, y);
+		PixelHistory west1History = new PixelHistory((int)x-1, y);
+		PixelHistory west2History = new PixelHistory((int)x-2, y);
+		PixelHistory north1History = new PixelHistory((int)x, (int)y-1);
+		PixelHistory north2History = new PixelHistory((int)x, (int)y-2);
+		PixelHistory south1History = new PixelHistory((int)x, (int)y+1);
+		PixelHistory south2History = new PixelHistory((int)x, (int)y+2);
+		
+		PixelHistory se1History = new PixelHistory((int)x+1, (int)y+1);
+		PixelHistory se2History = new PixelHistory((int)x+2, (int)y+2);
+		PixelHistory ne1History = new PixelHistory((int)x+1, (int)y-1);
+		PixelHistory ne2History = new PixelHistory((int)x+2, (int)y-2);
+		PixelHistory sw1History = new PixelHistory((int)x-1, (int)y+1);
+		PixelHistory sw2History = new PixelHistory((int)x-2, (int)y+2);
+		PixelHistory nw1History = new PixelHistory((int)x-1, (int)y-1);
+		PixelHistory nw2History = new PixelHistory((int)x-2, (int)y-2);
+		
 		//East//
 		int east3R = pixels[(east3)+0];
 		int east3G = pixels[(east3)+1];
 		int east3B = pixels[(east3)+2];
+		east1History.setPrevR(currentRE1);
+		east1History.setPrevG(currentGE1);
+		east1History.setPrevB(currentBE1);
+		east2History.setPrevR(currentRE2);
+		east2History.setPrevG(currentGE2);
+		east2History.setPrevB(currentBE2);
 		int differenceR = currentR-east3R;
 		int differenceG = currentG-east3G;
 		int differenceB = currentB-east3B;
@@ -84,8 +164,20 @@ public class RedEye {
 			pixels[(east2)+1] = ((differenceG/3))+east3G;
 			pixels[(east2)+2] = ((differenceB/3))+east3B;
 		}
+		east1History.setNewR(pixels[(east1)+0]);
+		east1History.setNewG(pixels[(east1)+1]);
+		east1History.setNewB(pixels[(east1)+2]);
+		east2History.setNewR(pixels[(east2)+0]);
+		east2History.setNewG(pixels[(east2)+1]);
+		east2History.setNewB(pixels[(east2)+2]);
 		
 		//SouthEast//
+		se1History.setPrevR(currentRSE1);
+		se1History.setPrevG(currentGSE1);
+		se1History.setPrevB(currentBSE1);
+		se2History.setPrevR(currentRSE2);
+		se2History.setPrevG(currentGSE2);
+		se2History.setPrevB(currentBSE2);
 				int se3R = pixels[(se3)+0];
 				int se3G = pixels[(se3)+1];
 				int se3B = pixels[(se3)+2];
@@ -102,9 +194,21 @@ public class RedEye {
 					pixels[(se2)+1] = ((differenceG/3))+se3G;
 					pixels[(se2)+2] = ((differenceB/3))+se3B;
 				}
+				se1History.setNewR(pixels[(se1)+0]);
+				se1History.setNewG(pixels[(se1)+1]);
+				se1History.setNewB(pixels[(se1)+2]);
+				se2History.setNewR(pixels[(se2)+0]);
+				se2History.setNewG(pixels[(se2)+1]);
+				se2History.setNewB(pixels[(se2)+2]);
 				
 				
 				//NorthEast//
+				ne1History.setPrevR(currentRNE1);
+				ne1History.setPrevG(currentGNE1);
+				ne1History.setPrevB(currentBNE1);
+				ne2History.setPrevR(currentRNE2);
+				ne2History.setPrevG(currentGNE2);
+				ne2History.setPrevB(currentBNE2);
 				int ne3R = pixels[(ne3)+0];
 				int ne3G = pixels[(ne3)+1];
 				int ne3B = pixels[(ne3)+2];
@@ -121,8 +225,20 @@ public class RedEye {
 					pixels[(ne2)+1] = ((differenceG/3))+ne3G;
 					pixels[(ne2)+2] = ((differenceB/3))+ne3B;
 				}
+				ne1History.setNewR(pixels[(ne1)+0]);
+				ne1History.setNewG(pixels[(ne1)+1]);
+				ne1History.setNewB(pixels[(ne1)+2]);
+				ne2History.setNewR(pixels[(ne2)+0]);
+				ne2History.setNewG(pixels[(ne2)+1]);
+				ne2History.setNewB(pixels[(ne2)+2]);
 				
 				//SouthWest//
+				sw1History.setPrevR(currentRSW1);
+				sw1History.setPrevG(currentGSW1);
+				sw1History.setPrevB(currentBSW1);
+				sw2History.setPrevR(currentRSW2);
+				sw2History.setPrevG(currentGSW2);
+				sw2History.setPrevB(currentBSW2);
 				int sw3R = pixels[(sw3)+0];
 				int sw3G = pixels[(sw3)+1];
 				int sw3B = pixels[(sw3)+2];
@@ -139,8 +255,20 @@ public class RedEye {
 					pixels[(sw2)+1] = ((differenceG/3))+sw3G;
 					pixels[(sw2)+2] = ((differenceB/3))+sw3B;
 				}
+				sw1History.setNewR(pixels[(sw1)+0]);
+				sw1History.setNewG(pixels[(sw1)+1]);
+				sw1History.setNewB(pixels[(sw1)+2]);
+				sw2History.setNewR(pixels[(sw2)+0]);
+				sw2History.setNewG(pixels[(sw2)+1]);
+				sw2History.setNewB(pixels[(sw2)+2]);
 				
 				//NrthWest//
+				nw1History.setPrevR(currentRNW1);
+				nw1History.setPrevG(currentGNW1);
+				nw1History.setPrevB(currentBNW1);
+				nw2History.setPrevR(currentRNW2);
+				nw2History.setPrevG(currentGNW2);
+				nw2History.setPrevB(currentBNW2);
 				int nw3R = pixels[(nw3)+0];
 				int nw3G = pixels[(nw3)+1];
 				int nw3B = pixels[(nw3)+2];
@@ -157,11 +285,23 @@ public class RedEye {
 					pixels[(nw2)+1] = ((differenceG/3))+nw3G;
 					pixels[(nw2)+2] = ((differenceB/3))+nw3B;
 				}
+				nw1History.setNewR(pixels[(nw1)+0]);
+				nw1History.setNewG(pixels[(nw1)+1]);
+				nw1History.setNewB(pixels[(nw1)+2]);
+				nw2History.setNewR(pixels[(nw2)+0]);
+				nw2History.setNewG(pixels[(nw2)+1]);
+				nw2History.setNewB(pixels[(nw2)+2]);
 		
 		//West/
 				int west3R = pixels[(west3)+0];
 				int west3G = pixels[(west3)+1];
 				int west3B = pixels[(west3)+2];
+				west1History.setPrevR(currentRW1);
+				west1History.setPrevG(currentGW1);
+				west1History.setPrevB(currentBW1);
+				west2History.setPrevR(currentRW2);
+				west2History.setPrevG(currentGW2);
+				west2History.setPrevB(currentBW2);
 				differenceR = currentR-west3R;
 				differenceG = currentG-west3G;
 				differenceB = currentB-west3B;
@@ -175,8 +315,20 @@ public class RedEye {
 					pixels[(west2)+1] = ((differenceG/3))+west3G;
 					pixels[(west2)+2] = ((differenceB/3))+west3B;
 				}
+				west1History.setNewR(pixels[(west1)+0]);
+				west1History.setNewG(pixels[(west1)+1]);
+				west1History.setNewB(pixels[(west1)+2]);
+				west2History.setNewR(pixels[(west2)+0]);
+				west2History.setNewG(pixels[(west2)+1]);
+				west2History.setNewB(pixels[(west2)+2]);
 				
 				//South//
+				south1History.setPrevR(currentRS1);
+				south1History.setPrevG(currentGS1);
+				south1History.setPrevB(currentBS1);
+				south2History.setPrevR(currentRS2);
+				south2History.setPrevG(currentGS2);
+				south2History.setPrevB(currentBS2);
 				int south3R = pixels[(south3)+0];
 				int south3G = pixels[(south3)+1];
 				int south3B = pixels[(south3)+2];
@@ -193,8 +345,20 @@ public class RedEye {
 					pixels[(south2)+1] = ((differenceG/3))+south3G;
 					pixels[(south2)+2] = ((differenceB/3))+south3B;
 				}
+				south1History.setNewR(pixels[(south1)+0]);
+				south1History.setNewG(pixels[(south1)+1]);
+				south1History.setNewB(pixels[(south1)+2]);
+				south2History.setNewR(pixels[(south2)+0]);
+				south2History.setNewG(pixels[(south2)+1]);
+				south2History.setNewB(pixels[(south2)+2]);
 				
 				//North//
+				north1History.setPrevR(currentRN1);
+				north1History.setPrevG(currentGN1);
+				north1History.setPrevB(currentBN1);
+				north2History.setPrevR(currentRN2);
+				north2History.setPrevG(currentGN2);
+				north2History.setPrevB(currentBN2);
 				int north3R = pixels[(north3)+0];
 				int north3G = pixels[(north3)+1];
 				int north3B = pixels[(north3)+2];
@@ -211,7 +375,31 @@ public class RedEye {
 					pixels[(north2)+1] = ((differenceG/3))+north3G;
 					pixels[(north2)+2] = ((differenceB/3))+north3B;
 				}
+				north1History.setNewR(pixels[(north1)+0]);
+				north1History.setNewG(pixels[(north1)+1]);
+				north1History.setNewB(pixels[(north1)+2]);
+				north2History.setNewR(pixels[(north2)+0]);
+				north2History.setNewG(pixels[(north2)+1]);
+				north2History.setNewB(pixels[(north2)+2]);
 		
+		change.getAllPixelHistory().add(east1History);
+		change.getAllPixelHistory().add(east2History);
+		
+		change.getAllPixelHistory().add(west1History);
+		change.getAllPixelHistory().add(west2History);
+		change.getAllPixelHistory().add(north1History);
+		change.getAllPixelHistory().add(north2History);
+		change.getAllPixelHistory().add(south1History);
+		change.getAllPixelHistory().add(south2History);
+		change.getAllPixelHistory().add(se1History);
+		change.getAllPixelHistory().add(se2History);
+		change.getAllPixelHistory().add(sw1History);
+		change.getAllPixelHistory().add(sw2History);
+		
+		change.getAllPixelHistory().add(ne1History);
+		change.getAllPixelHistory().add(ne2History);
+		change.getAllPixelHistory().add(nw1History);
+		change.getAllPixelHistory().add(nw2History);
 		
 		return pixels;
 	}
@@ -255,9 +443,9 @@ public class RedEye {
 				if(isWithinUserCircle(centerEyeX, centerEyeY, inspiram.redEyeDiameter, x, y)) {
 					if(isRedEyeValues(r, g, b)) {
 						PixelHistory pixelHistory = new PixelHistory(x, y);
-						pixelHistory.setPrevR(pixels[pixelIndex+(0)]);
-						pixelHistory.setPrevG(pixels[pixelIndex+(1)]);
-						pixelHistory.setPrevB(pixels[pixelIndex+(2)]);
+						pixelHistory.setPrevR(pixels[r]);
+						pixelHistory.setPrevG(pixels[g]);
+						pixelHistory.setPrevB(pixels[b]);
 						pixels[pixelIndex+(0)] = rValue;
 						pixels[pixelIndex+(1)] = gValue;
 						pixels[pixelIndex+(2)] = bValue;
@@ -266,12 +454,12 @@ public class RedEye {
 						pixelHistory.setNewB(pixels[pixelIndex+(2)]);
 						change.allPixelHistory.add(pixelHistory);
 	//					pixels = -antiAliasRedEye(pixels, pixelIndex, x, y, width, nbands);
-						pixels = antiAlias(pixels, (int)y, width, nbands, (int)x, inspiram.redEyeDiameter, centerEyeX, centerEyeY);
+						pixels = antiAlias(pixels, (int)y, width, nbands, (int)x, inspiram.redEyeDiameter, centerEyeX, centerEyeY, change);
 					}
 				}
 			}
 		}
-		inspiram.inspiramHistory.addChange(change);
+//		inspiram.inspiramHistory.addChange(change);
 		writableRaster.setPixels(0, 0, width, height, pixels);
 		TiledImage ti = new TiledImage(imageToFix,1,1);
 		ti.setData(writableRaster);

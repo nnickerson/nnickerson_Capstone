@@ -33,7 +33,7 @@ public class ResizerSlider extends JFrame {
 	JButton resizeButton;
 	JFrame thisFrame = this;
 	boolean heightIsLarger = false;
-	int percent = 100;
+	double percent = 100.0;
 	Inspiram inspiram;
 
 	public ResizerSlider(int currentImageWidth, int currentImageHeight, Inspiram inspiram) {
@@ -154,8 +154,10 @@ public class ResizerSlider extends JFrame {
 				int newHeight = originalHeight;
 				int newWidth = (int)(originalWidth);
 				percent = tempSlider.getValue();
-				newWidth = (originalWidth/100)*percent;
-				newHeight = (originalHeight/100)*percent;
+				double decimaled = percent/100.0;
+				System.out.println("DECIIIIIIIIIIImaLEDddD: " + decimaled);
+				newWidth = (int)((double)originalWidth*decimaled);
+				newHeight = (int)((double)originalHeight*decimaled);
 				widthLabel.setText("Width: " + newWidth);
 				heightLabel.setText("Height: " + newHeight);
 				currentWidth = newWidth;
@@ -185,7 +187,7 @@ public class ResizerSlider extends JFrame {
 				
 				inspiram.layers[inspiram.currentLayer].setLayerImage(texter.getPlanarImageFromImage(inspiram.layers[inspiram.currentLayer].getPlainImage()));
 				System.out.println("THE LAYRE IMAGE: " + currentWidth);
-				inspiram.layers[inspiram.currentLayer].setLayerImage(Resizer.resizeImage(inspiram.layers[inspiram.currentLayer].getLayerImage(),currentWidth,currentHeight,percent));
+				inspiram.layers[inspiram.currentLayer].setLayerImage(Resizer.resizeImage(inspiram.layers[inspiram.currentLayer].getLayerImage(),currentWidth,currentHeight,100));
 				inspiram.layers[inspiram.currentLayer].setSize(currentWidth, currentHeight);
 				inspiram.layers[inspiram.currentLayer].setPlainImage();
 				inspiram.layers[inspiram.currentLayer].add(inspiram.layers[inspiram.currentLayer].getImageDisplay());

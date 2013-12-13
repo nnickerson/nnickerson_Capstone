@@ -589,6 +589,13 @@ public class Inspiram extends JApplet {
 		currentLayer = layers.length-1;
 		layers[layers.length-1] = newLayer;
 		layers[0].setBackground(Color.green);
+		BufferedImage myBI = new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB);
+	    Image blankImage = myBI;
+	    Text t = new Text();
+	    PlanarImage blankPlanarImage = t.getPlanarImageFromImage(blankImage);
+	    layers[layers.length-1].setLayerImage(blankPlanarImage);
+	    layers[layers.length-1].setPlainImage();
+	    
 		try {
 			layers[0].setOpaque(false);
 //			layers[0].add(new JLabel(new ImageIcon(ImageIO.read(new File("images.jpg")))));

@@ -33,6 +33,10 @@ public class Text {
 	}
 	
 	public PlanarImage getPlanarImageFromImage(Image anyImage) {
+		if(anyImage == null) {
+			BufferedImage myBI = new BufferedImage(5, 5, BufferedImage.TYPE_INT_RGB);
+		    anyImage = myBI;
+		}
 		ParameterBlock pb = new ParameterBlock();
 		pb.add(anyImage);
 		PlanarImage myPlanarImage;
